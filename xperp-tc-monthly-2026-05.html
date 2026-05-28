@@ -529,7 +529,96 @@
     </div>
   </section>
 
-  <!-- Slide 2: Executive Summary -->
+  <!-- Slide 2: P0 파이프라인 진척 -->
+  <section class="slide" data-slide="13">
+    <div class="slide-title animate">P0 파이프라인 진척 <a href="https://www.notion.so/365e706187e281a695d6ec57cbc8db27" target="_blank" class="notion-link">통합 Release v60.2</a></div>
+
+    <div class="p0-progress-wrap animate">
+      <div style="font-family:'Inter',sans-serif;font-size:0.74rem;letter-spacing:0.04em;color:var(--text-secondary);margin-bottom:0.5rem;">전체 5단계 중 <strong style="color:var(--accent);">현재 ② TBT · ③ TC 가동</strong> — <span style="color:var(--positive);">1 완료</span> / <span style="color:var(--accent);">2 현재</span> / <span style="color:var(--text-tertiary);">2 예정</span></div>
+      <div class="p0-grid">
+        <div class="p0-block done"><div class="pb-num">① 단계</div><br><span class="pb-badge done">✓ 완료</span><div class="pb-name">UI 파싱 규칙</div><div class="pb-stat">R0·T ~80개 안정</div></div>
+        <div class="p0-block cur"><div class="pb-num">② 단계</div><br><span class="pb-badge cur">● 현재</span><div class="pb-name">TBT 생성</div><div class="pb-stat">Gate 60+ 통과</div></div>
+        <div class="p0-block cur"><div class="pb-num">③ 단계</div><br><span class="pb-badge cur">● 현재</span><div class="pb-name">TC 변환</div><div class="pb-stat">Gate 60+ 통과</div></div>
+        <div class="p0-block"><div class="pb-num">④ 단계</div><br><span class="pb-badge wait">○ 예정</span><div class="pb-name">Script 생성</div><div class="pb-stat">6월 착수</div></div>
+        <div class="p0-block"><div class="pb-num">⑤ 단계</div><br><span class="pb-badge wait">○ 예정</span><div class="pb-name">QA 검증</div><div class="pb-stat">7~8월</div></div>
+      </div>
+
+      <div class="p0-cycle-box">
+        <div class="p0-cycle-title">각 단계 반복 사이클</div>
+        <div class="p0-cycle-flow">
+          <span class="p0-cycle-step">생성</span><span class="p0-cycle-arrow">→</span>
+          <span class="p0-cycle-step">자동 점검</span><span class="p0-cycle-arrow">→</span>
+          <span class="p0-cycle-step">사람 검토</span><span class="p0-cycle-arrow">→</span>
+          <span class="p0-cycle-step">규칙 개선</span><span class="p0-cycle-arrow">→</span>
+          <span class="p0-cycle-step" style="opacity:0.6">반복</span>
+        </div>
+        <div class="p0-cycle-note">
+          앞 두 단계(TBT·TC)가 <strong>품질 80점대 + 자동 점검 ~92%</strong>로 안정 구간 진입. 앞 단계 품질이 뒷 단계를 결정하므로 <strong>순차 안정화</strong> 후 스크립트 단계로 진행합니다.
+        </div>
+      </div>
+
+      <div style="font-family:'Inter',sans-serif;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-tertiary);margin:0.2rem 0 0.4rem;">P0 마일스톤 — 중첩 진행 (월별) · <span style="color:var(--accent);">◎ 주력</span> / <span style="color:var(--text-secondary);">○ 병행</span></div>
+      <div class="gantt">
+        <div class="gantt-row gh">
+          <div></div>
+          <div class="gantt-cell gh-m">4월</div><div class="gantt-cell gh-m">5월</div><div class="gantt-cell gh-m">6월</div><div class="gantt-cell gh-m">7월</div><div class="gantt-cell gh-m">8월</div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-label">TBT</div>
+          <div class="gantt-cell" style="grid-column:2/4;"><div class="gantt-bar primary">◎ TBT 고도화 → Gate<div class="gantt-now" style="left:97%;"><div class="gantt-now-label">NOW</div></div></div></div>
+          <div class="gantt-cell" style="grid-column:4/5;"><div class="gantt-bar secondary">○ 잔여</div></div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-label">TC</div>
+          <div class="gantt-cell" style="grid-column:3/5;"><div class="gantt-bar primary">◎ TC 변환 + 검토 반영</div></div>
+          <div class="gantt-cell" style="grid-column:5/6;"><div class="gantt-bar secondary">○ 고도화</div></div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-label">Script</div>
+          <div class="gantt-cell" style="grid-column:4/6;"><div class="gantt-bar primary">◎ Script 생성 안정화</div></div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-label">통합</div>
+          <div class="gantt-cell" style="grid-column:6/7;"><div class="gantt-bar primary">◎ 통합 + Gate P0</div></div>
+        </div>
+        <div class="gantt-row" style="margin-top:4px;">
+          <div class="gantt-label" style="color:var(--positive);">범용성</div>
+          <div class="gantt-cell" style="grid-column:2/7;"><div class="gantt-bar verify">전자고지서 적용 ✓ → 외부 피드백 사이클 ✓ → 통합 release ✓</div></div>
+        </div>
+      </div>
+
+      <!-- Gate -->
+      <div class="gate-progress">
+        <span style="font-size:0.9rem;color:var(--text-secondary);white-space:nowrap;">P0 게이트 (정본 §2.7, 16항목)</span>
+        <div class="gate-bar-track"><div class="gate-bar-fill" style="width:56%;"></div></div>
+        <span class="gate-pct">9 / 16 충족 (+부분 2)</span>
+      </div>
+
+      <div class="gate-cols">
+        <div>
+          <h4>충족 9 + 부분 2 — 품질·구조·범용성</h4>
+          <ul>
+            <li><span class="gi ok">✔</span> 다른 기획서 1건 적용 (전자고지서)</li>
+            <li><span class="gi ok">✔</span> Layer 2 구조 완전성 6/6 (V행·PR·Flow·행수·멱등성·타기획서)</li>
+            <li><span class="gi ok">✔</span> validate V-1~8 · Pre/Post-flight 9/9</li>
+            <li><span class="gi" style="color:var(--accent);">◐</span> rule_tests ~92% · R0 본질 위반 0 (부분 2)</li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="color:var(--negative);">미충족 5 — 뒷단 실행 + 사람 검증 + 통합</h4>
+          <ul>
+            <li><span class="gi no">☐</span> ④ 스크립트 생성 / ⑤ QA E2E 무인 실행</li>
+            <li><span class="gi no">☐</span> 표준 모듈 강제 (Script 단계 후)</li>
+            <li><span class="gi no">☐</span> 샘플 50행 정확도 70%+ · E2E 1화면</li>
+            <li><span class="gi no">☐</span> 3계층 품질 대시보드 통합</li>
+          </ul>
+          <div style="font-size:0.78rem;color:var(--text-tertiary);margin-top:0.5rem;line-height:1.5;">※ 종전 19/22(86%)·15/19(79%)는 비공식 부풀림 집계. 정본 §2.7(16항목) 기준으로 통일 — 남은 5건은 P0 후반부(Script·QA·사람 검증). <a href="https://www.notion.so/36ee706187e281a7ab07e4d8a3a76177" target="_blank" class="notion-link" style="font-size:0.72rem;">단일 소스↗</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 3: Executive Summary -->
   <section class="slide" data-slide="1">
     <div class="slide-title animate">진행 상황 요약 — Where We Are Now</div>
 
@@ -956,95 +1045,6 @@
     </div>
   </section>
 
-  <!-- Slide 14: P0 pipeline progress -->
-  <section class="slide" data-slide="13">
-    <div class="slide-title animate">P0 파이프라인 진척 <a href="https://www.notion.so/365e706187e281a695d6ec57cbc8db27" target="_blank" class="notion-link">통합 Release v60.2</a></div>
-
-    <div class="p0-progress-wrap animate">
-      <div style="font-family:'Inter',sans-serif;font-size:0.74rem;letter-spacing:0.04em;color:var(--text-secondary);margin-bottom:0.5rem;">전체 5단계 중 <strong style="color:var(--accent);">현재 ② TBT · ③ TC 가동</strong> — <span style="color:var(--positive);">1 완료</span> / <span style="color:var(--accent);">2 현재</span> / <span style="color:var(--text-tertiary);">2 예정</span></div>
-      <div class="p0-grid">
-        <div class="p0-block done"><div class="pb-num">① 단계</div><br><span class="pb-badge done">✓ 완료</span><div class="pb-name">UI 파싱 규칙</div><div class="pb-stat">R0·T ~80개 안정</div></div>
-        <div class="p0-block cur"><div class="pb-num">② 단계</div><br><span class="pb-badge cur">● 현재</span><div class="pb-name">TBT 생성</div><div class="pb-stat">Gate 60+ 통과</div></div>
-        <div class="p0-block cur"><div class="pb-num">③ 단계</div><br><span class="pb-badge cur">● 현재</span><div class="pb-name">TC 변환</div><div class="pb-stat">Gate 60+ 통과</div></div>
-        <div class="p0-block"><div class="pb-num">④ 단계</div><br><span class="pb-badge wait">○ 예정</span><div class="pb-name">Script 생성</div><div class="pb-stat">6월 착수</div></div>
-        <div class="p0-block"><div class="pb-num">⑤ 단계</div><br><span class="pb-badge wait">○ 예정</span><div class="pb-name">QA 검증</div><div class="pb-stat">7~8월</div></div>
-      </div>
-
-      <div class="p0-cycle-box">
-        <div class="p0-cycle-title">각 단계 반복 사이클</div>
-        <div class="p0-cycle-flow">
-          <span class="p0-cycle-step">생성</span><span class="p0-cycle-arrow">→</span>
-          <span class="p0-cycle-step">자동 점검</span><span class="p0-cycle-arrow">→</span>
-          <span class="p0-cycle-step">사람 검토</span><span class="p0-cycle-arrow">→</span>
-          <span class="p0-cycle-step">규칙 개선</span><span class="p0-cycle-arrow">→</span>
-          <span class="p0-cycle-step" style="opacity:0.6">반복</span>
-        </div>
-        <div class="p0-cycle-note">
-          앞 두 단계(TBT·TC)가 <strong>품질 80점대 + 자동 점검 ~92%</strong>로 안정 구간 진입. 앞 단계 품질이 뒷 단계를 결정하므로 <strong>순차 안정화</strong> 후 스크립트 단계로 진행합니다.
-        </div>
-      </div>
-
-      <div style="font-family:'Inter',sans-serif;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-tertiary);margin:0.2rem 0 0.4rem;">P0 마일스톤 — 중첩 진행 (월별) · <span style="color:var(--accent);">◎ 주력</span> / <span style="color:var(--text-secondary);">○ 병행</span></div>
-      <div class="gantt">
-        <div class="gantt-row gh">
-          <div></div>
-          <div class="gantt-cell gh-m">4월</div><div class="gantt-cell gh-m">5월</div><div class="gantt-cell gh-m">6월</div><div class="gantt-cell gh-m">7월</div><div class="gantt-cell gh-m">8월</div>
-        </div>
-        <div class="gantt-row">
-          <div class="gantt-label">TBT</div>
-          <div class="gantt-cell" style="grid-column:2/4;"><div class="gantt-bar primary">◎ TBT 고도화 → Gate<div class="gantt-now" style="left:97%;"><div class="gantt-now-label">NOW</div></div></div></div>
-          <div class="gantt-cell" style="grid-column:4/5;"><div class="gantt-bar secondary">○ 잔여</div></div>
-        </div>
-        <div class="gantt-row">
-          <div class="gantt-label">TC</div>
-          <div class="gantt-cell" style="grid-column:3/5;"><div class="gantt-bar primary">◎ TC 변환 + 검토 반영</div></div>
-          <div class="gantt-cell" style="grid-column:5/6;"><div class="gantt-bar secondary">○ 고도화</div></div>
-        </div>
-        <div class="gantt-row">
-          <div class="gantt-label">Script</div>
-          <div class="gantt-cell" style="grid-column:4/6;"><div class="gantt-bar primary">◎ Script 생성 안정화</div></div>
-        </div>
-        <div class="gantt-row">
-          <div class="gantt-label">통합</div>
-          <div class="gantt-cell" style="grid-column:6/7;"><div class="gantt-bar primary">◎ 통합 + Gate P0</div></div>
-        </div>
-        <div class="gantt-row" style="margin-top:4px;">
-          <div class="gantt-label" style="color:var(--positive);">범용성</div>
-          <div class="gantt-cell" style="grid-column:2/7;"><div class="gantt-bar verify">전자고지서 적용 ✓ → 외부 피드백 사이클 ✓ → 통합 release ✓</div></div>
-        </div>
-      </div>
-
-      <!-- Gate -->
-      <div class="gate-progress">
-        <span style="font-size:0.9rem;color:var(--text-secondary);white-space:nowrap;">P0 게이트 (정본 §2.7, 16항목)</span>
-        <div class="gate-bar-track"><div class="gate-bar-fill" style="width:56%;"></div></div>
-        <span class="gate-pct">9 / 16 충족 (+부분 2)</span>
-      </div>
-
-      <div class="gate-cols">
-        <div>
-          <h4>충족 9 + 부분 2 — 품질·구조·범용성</h4>
-          <ul>
-            <li><span class="gi ok">✔</span> 다른 기획서 1건 적용 (전자고지서)</li>
-            <li><span class="gi ok">✔</span> Layer 2 구조 완전성 6/6 (V행·PR·Flow·행수·멱등성·타기획서)</li>
-            <li><span class="gi ok">✔</span> validate V-1~8 · Pre/Post-flight 9/9</li>
-            <li><span class="gi" style="color:var(--accent);">◐</span> rule_tests ~92% · R0 본질 위반 0 (부분 2)</li>
-          </ul>
-        </div>
-        <div>
-          <h4 style="color:var(--negative);">미충족 5 — 뒷단 실행 + 사람 검증 + 통합</h4>
-          <ul>
-            <li><span class="gi no">☐</span> ④ 스크립트 생성 / ⑤ QA E2E 무인 실행</li>
-            <li><span class="gi no">☐</span> 표준 모듈 강제 (Script 단계 후)</li>
-            <li><span class="gi no">☐</span> 샘플 50행 정확도 70%+ · E2E 1화면</li>
-            <li><span class="gi no">☐</span> 3계층 품질 대시보드 통합</li>
-          </ul>
-          <div style="font-size:0.78rem;color:var(--text-tertiary);margin-top:0.5rem;line-height:1.5;">※ 종전 19/22(86%)·15/19(79%)는 비공식 부풀림 집계. 정본 §2.7(16항목) 기준으로 통일 — 남은 5건은 P0 후반부(Script·QA·사람 검증). <a href="https://www.notion.so/36ee706187e281a7ab07e4d8a3a76177" target="_blank" class="notion-link" style="font-size:0.72rem;">단일 소스↗</a></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Slide 15: Roadmap -->
   <section class="slide" data-slide="14">
     <div class="slide-title animate">Roadmap</div>
@@ -1158,7 +1158,7 @@ var navDotsContainer = document.getElementById('navDots');
 var chartInstances = {};
 
 // chart slide index (DOM order) — only the quality convergence chart remains
-var IDX_TREND = 5;    // quality convergence (shifted after Architecture slide removed)
+var IDX_TREND = 6;    // quality convergence (shifted after P0 slide moved to position 2)
 
 (function buildDots() {
   for (var i = 0; i < totalSlides; i++) {
