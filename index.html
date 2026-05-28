@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XpERP TC 자동화 테스트 시스템 — 월간 종합 보고 (2026-05)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <script>Chart.defaults.animation = false;</script>
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html.theme-dark {
+      --bg: #1A1916;
+      --surface: #24221E;
+      --surface-alt: #2E2C27;
+      --border: rgba(255,255,255,0.07);
+      --text: #E8E4DD;
+      --text-secondary: #9B9588;
+      --text-tertiary: #6B665C;
+      --accent: #D4A574;
+      --accent-dim: rgba(212,165,116,0.1);
+      --positive: #7BC47F;
+      --negative: #E87070;
+      --glass: rgba(26,25,22,0.94);
+    }
+    html.theme-light {
+      --bg: #F7F6F3;
+      --surface: #FFFFFF;
+      --surface-alt: #EFEEEB;
+      --border: rgba(0,0,0,0.08);
+      --text: #2C2C2C;
+      --text-secondary: #6B6B6B;
+      --text-tertiary: #9B9B9B;
+      --accent: #8B6F47;
+      --accent-dim: rgba(139,111,71,0.07);
+      --positive: #3D7A4A;
+      --negative: #B84444;
+      --glass: rgba(247,246,243,0.94);
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.7;
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1, h2, h3, h4, h5 {
+      font-family: 'Noto Sans KR', sans-serif;
+      line-height: 1.2;
+      color: var(--text);
+    }
+    .num, .label-en, .metric-val, .chart-label {
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    .slide-title {
+      font-size: 1.6rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 1.8rem;
+    }
+    .slide-title::after {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--accent);
+      margin-top: 0.75rem;
+    }
+
+    .slides { height: 100vh; overflow: hidden; position: relative; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 52px 48px 36px 48px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      pointer-events: none;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--text-tertiary) transparent;
+    }
+    .slide > * { width: 100%; max-width: 1080px; }
+    .slide.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    .slide .animate {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .slide.active .animate { opacity: 1; transform: translateY(0); }
+    .slide.active .animate:nth-child(2) { transition-delay: 0.08s; }
+    .slide.active .animate:nth-child(3) { transition-delay: 0.16s; }
+    .slide.active .animate:nth-child(4) { transition-delay: 0.24s; }
+    .slide.active .animate:nth-child(5) { transition-delay: 0.32s; }
+    .slide.active .animate:nth-child(6) { transition-delay: 0.4s; }
+    .slide.active .animate:nth-child(7) { transition-delay: 0.48s; }
+
+    .viz-menu {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 44px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .viz-menu .menu-left { display: flex; align-items: center; gap: 16px; }
+    .viz-menu .menu-right { display: flex; align-items: center; gap: 8px; }
+    .viz-menu button {
+      background: none; border: 1px solid var(--border);
+      color: var(--text-secondary); cursor: pointer;
+      padding: 4px 12px; border-radius: 4px;
+      font-family: 'Inter', sans-serif; font-size: 0.85rem;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .viz-menu button:hover { color: var(--text); border-color: var(--text-tertiary); }
+    .slide-counter {
+      font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500;
+      color: var(--text-secondary); min-width: 56px; text-align: center;
+    }
+
+    /* HERO */
+    .hero-slide { justify-content: center; align-items: center; padding-bottom: 80px; }
+    .hero-slide > * { max-width: 1080px; width: 100%; }
+    .hero-pre {
+      font-family: 'Inter', sans-serif; font-size: 0.9rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 2rem;
+    }
+    .hero-title { font-size: 3.6rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 1.5rem; }
+    .hero-title em { font-style: normal; color: var(--accent); }
+    .hero-sub { font-size: 1.35rem; font-weight: 500; color: var(--text-secondary); max-width: 640px; line-height: 1.8; margin-bottom: 3rem; }
+    .hero-meta { display: flex; gap: 3rem; font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--text-tertiary); letter-spacing: 0.05em; }
+    .hero-meta span { display: flex; align-items: center; gap: 6px; }
+
+    /* METRICS tiers */
+    .metrics-tier { margin-bottom: 1.6rem; }
+    .tier-header {
+      font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary);
+      margin-bottom: 0.7rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border);
+    }
+    .tier-header.accent-tier { color: var(--accent); border-bottom-color: var(--accent); opacity: 0.7; }
+    .tier-header.positive-tier { color: var(--positive); border-bottom-color: var(--positive); opacity: 0.7; }
+
+    .metrics-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      background: var(--border); margin-bottom: 0;
+    }
+    .metric-cell { background: var(--bg); padding: 1.1rem 1rem; text-align: left; }
+    .metric-val { font-size: 2.4rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1; margin-bottom: 0.3rem; }
+    .metric-val.accent { color: var(--accent); }
+    .metric-val.positive { color: var(--positive); }
+    .metric-val.negative { color: var(--negative); }
+    .metric-label { font-size: 0.88rem; color: var(--text-secondary); letter-spacing: 0.03em; }
+    .metric-sub { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: var(--text-tertiary); margin-top: 0.15rem; }
+
+    .gap-bridge {
+      padding: 1rem 1.2rem; background: var(--accent-dim);
+      border-left: 2px solid var(--accent); border-radius: 0 4px 4px 0;
+      font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7;
+    }
+    .gap-bridge strong { color: var(--text); font-weight: 500; }
+
+    /* FEATURES */
+    .features-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+    .feature-block { padding: 1.5rem 0; }
+    .feature-block-label {
+      font-family: 'Inter', sans-serif; font-size: 0.82rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem;
+    }
+    .feature-block h3 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .feature-block-desc {
+      font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;
+      margin-bottom: 1.2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+    }
+    .feature-item { display: flex; align-items: baseline; gap: 1.2rem; padding: 0.55rem 0; border-bottom: 1px solid var(--border); }
+    .feature-item:last-child { border-bottom: none; }
+    .fi-name { font-size: 0.95rem; font-weight: 500; color: var(--text); white-space: nowrap; min-width: 110px; }
+    .fi-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    /* ARCHITECTURE */
+    .arch-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem; }
+    .arch-system { padding: 2rem 0; }
+    .arch-system-label {
+      font-family: 'Inter', sans-serif; font-size: 0.85rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem;
+    }
+    .arch-system h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.2rem; }
+    .arch-row { display: flex; align-items: baseline; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+    .arch-row .arch-key { color: var(--text-secondary); width: 120px; flex-shrink: 0; font-family: 'Inter', sans-serif; font-size: 0.88rem; }
+    .arch-row .arch-val { color: var(--text); }
+    .arch-track3 { grid-column: 1 / -1; padding: 1.5rem 2rem; border: 1px solid var(--border); border-radius: 4px; }
+    .arch-track3 h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.8rem; }
+    .arch-track3-grid { display: flex; gap: 3rem; font-size: 0.95rem; color: var(--text-secondary); }
+    .arch-track3-grid span { color: var(--text); font-weight: 500; }
+
+    /* AI EVAL */
+    .eval-header { display: flex; align-items: baseline; gap: 2rem; margin-bottom: 1.5rem; }
+    .eval-grade { font-family: 'Inter', sans-serif; font-size: 3.2rem; font-weight: 600; color: var(--negative); line-height: 1; }
+    .eval-score { font-family: 'Inter', sans-serif; font-size: 1.6rem; font-weight: 500; color: var(--text-secondary); }
+    .eval-score small { font-size: 0.95rem; color: var(--text-tertiary); }
+    .eval-body { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .score-list { list-style: none; }
+    .score-list li { display: flex; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+    .score-list .doc-name { flex: 1; color: var(--text-secondary); }
+    .score-list .doc-score { font-family: 'Inter', sans-serif; font-weight: 500; width: 48px; text-align: right; margin-right: 12px; }
+    .score-list .doc-grade { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 600; width: 20px; text-align: center; }
+    .grade-d { color: #facc15; }
+    .grade-f { color: var(--negative); }
+    .area-section h4 {
+      font-size: 0.88rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-tertiary); margin-bottom: 0.8rem; margin-top: 1rem;
+    }
+    .area-bar { display: flex; align-items: center; padding: 0.35rem 0; font-size: 0.92rem; }
+    .area-bar .ab-label { width: 100px; color: var(--text-secondary); flex-shrink: 0; }
+    .area-bar .ab-track { flex: 1; height: 4px; background: var(--surface); border-radius: 2px; margin: 0 10px; overflow: hidden; }
+    .area-bar .ab-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+    .area-bar .ab-fill.good { background: var(--text-secondary); }
+    .area-bar .ab-fill.bad { background: var(--negative); }
+    .area-bar .ab-pct { font-family: 'Inter', sans-serif; width: 52px; text-align: right; color: var(--text-secondary); white-space: nowrap; }
+    .area-bar .qv-meta { font-family: 'Inter', sans-serif; font-size: 0.74rem; color: var(--text-tertiary); width: 128px; text-align: right; white-space: nowrap; }
+
+    /* Bottlenecks */
+    .bottleneck-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 1.8rem; }
+    .bottleneck { padding-top: 1rem; border-top: 1px solid var(--border); }
+    .bottleneck .bn-num { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-tertiary); letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+    .bottleneck h4 { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .bottleneck p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; }
+
+    .chart-section { margin-bottom: 2rem; }
+    .chart-section h4 { font-size: 0.88rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 1rem; }
+    .chart-wrap { height: 180px; position: relative; }
+    .chart-wrap.tall { height: 300px; }
+
+    .conclusion-box {
+      padding: 1.5rem 2rem; background: var(--accent-dim);
+      border-left: 2px solid var(--accent); border-radius: 0 4px 4px 0;
+      font-size: 1rem; color: var(--text); line-height: 1.7;
+    }
+    .conclusion-box.positive { border-left-color: var(--positive); background: rgba(61,122,74,0.07); }
+
+    /* Compare */
+    .compare-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 1.5rem; }
+    .compare-card { padding: 1.5rem; border: 1px solid var(--border); border-radius: 6px; position: relative; }
+    .compare-card.highlight { border-color: var(--accent); background: var(--accent-dim); }
+    .compare-card-label { font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.8rem; }
+    .compare-card.highlight .compare-card-label { color: var(--accent); }
+    .compare-big { font-family: 'Inter', sans-serif; font-size: 3.2rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
+    .compare-big.neg { color: var(--negative); }
+    .compare-big.pos { color: var(--accent); }
+    .compare-sub { font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem; }
+    .compare-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; }
+    .cm-item { text-align: center; padding: 0.6rem 0.4rem; background: var(--bg); border-radius: 4px; }
+    .cm-val { font-family: 'Inter', sans-serif; font-size: 1.3rem; font-weight: 700; line-height: 1; margin-bottom: 0.2rem; }
+    .cm-val.neg { color: var(--negative); }
+    .cm-val.pos { color: var(--positive); }
+    .cm-label { font-size: 0.8rem; color: var(--text-tertiary); }
+    .compare-insight { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem; }
+    .insight-item { padding: 0.8rem 1rem; border-top: 1px solid var(--border); }
+    .insight-item h4 { font-size: 0.88rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.3rem; }
+    .insight-item p { font-size: 0.9rem; color: var(--text-tertiary); line-height: 1.5; }
+    .compare-note { font-size: 0.85rem; color: var(--text-tertiary); font-style: italic; text-align: right; }
+
+    /* Q&A */
+    .qa-block { margin-bottom: 1.8rem; }
+    .qa-q { font-size: 1.35rem; font-weight: 600; margin-bottom: 1rem; line-height: 1.5; }
+    .qa-q::before { content: 'Q.'; font-family: 'Inter', sans-serif; font-weight: 600; color: var(--accent); margin-right: 0.5rem; }
+    .qa-a { padding-left: 2rem; border-left: 1px solid var(--border); color: var(--text-secondary); font-size: 1rem; line-height: 1.8; }
+    .qa-a strong { color: var(--text); font-weight: 500; }
+    .qa-detail { display: flex; gap: 2rem; margin-top: 0.8rem; font-family: 'Inter', sans-serif; font-size: 0.92rem; flex-wrap: wrap; }
+    .qa-detail span { color: var(--text-tertiary); }
+    .qa-detail span em { font-style: normal; color: var(--text); font-weight: 500; }
+
+    /* Pain & support */
+    .pain-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .pain-col-header {
+      font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 1.2rem;
+      padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+    }
+    .pain-col-header.accent-header { color: var(--accent); border-bottom-color: var(--accent); opacity: 0.7; }
+    .pain-item { margin-bottom: 1.5rem; }
+    .pain-num { font-family: 'Inter', sans-serif; font-size: 0.85rem; letter-spacing: 0.15em; color: var(--text-tertiary); margin-bottom: 0.5rem; }
+    .pain-question { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.7rem; line-height: 1.5; }
+    .pain-arrow { display: block; width: 24px; height: 1px; background: var(--accent); margin-bottom: 0.7rem; }
+    .pain-answer { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.7; }
+    .pain-answer strong { color: var(--text); font-weight: 500; }
+    .support-item { padding: 0.8rem 0; border-bottom: 1px solid var(--border); }
+    .support-item:last-child { border-bottom: none; }
+    .support-issue { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.3rem; line-height: 1.5; }
+    .support-arrow { display: inline-block; font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--accent); margin: 0.2rem 0; }
+    .support-need { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
+    .support-need strong { color: var(--text); font-weight: 500; }
+
+    /* Pipeline */
+    .pipeline-flow { display: flex; align-items: center; gap: 0; margin-bottom: 1.8rem; flex-wrap: wrap; }
+    .pipeline-step { padding: 0.6rem 1.2rem; font-size: 0.95rem; color: var(--text); white-space: nowrap; }
+    .pipeline-arrow { color: var(--text-tertiary); font-family: 'Inter', sans-serif; padding: 0 0.5rem; font-size: 0.95rem; }
+
+    /* Editorial table */
+    .ed-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    .ed-table thead th {
+      text-align: left; font-weight: 600; color: var(--text-tertiary); font-size: 0.85rem;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--text-tertiary);
+    }
+    .ed-table tbody td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+    .ed-table tbody td:first-child { font-family: 'Inter', sans-serif; font-weight: 500; color: var(--text); }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 0; }
+    .tl-row { display: grid; grid-template-columns: 130px 1fr; gap: 1.5rem; padding: 0.8rem 0; border-bottom: 1px solid var(--border); }
+    .tl-week { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 500; color: var(--text-tertiary); padding-top: 0.15rem; }
+    .tl-week.current { color: var(--accent); }
+    .tl-date { font-family: 'Inter', sans-serif; font-size: 0.82rem; color: var(--text-tertiary); margin-top: 0.2rem; }
+    .tl-content { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; }
+    .tl-content strong { color: var(--text); font-weight: 500; }
+    .tl-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .tl-tag { font-family: 'Inter', sans-serif; font-size: 0.78rem; color: var(--text-tertiary); padding: 2px 8px; border: 1px solid var(--border); border-radius: 2px; }
+
+    /* Roadmap */
+    .roadmap-list { list-style: none; }
+    .roadmap-list li { display: grid; grid-template-columns: 48px 1fr auto; gap: 1.5rem; padding: 1.1rem 0; border-bottom: 1px solid var(--border); }
+    .rm-priority { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500; color: var(--text-tertiary); }
+    .rm-priority.active { color: var(--accent); }
+    .rm-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .rm-desc { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; }
+    .rm-period { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: var(--text-tertiary); white-space: nowrap; text-align: right; padding-top: 0.15rem; }
+    .rm-status { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--accent); margin-top: 0.3rem; display: inline-block; }
+    .focus-box { margin-top: 1.2rem; padding: 1.2rem 1.5rem; border: 1px solid var(--accent); border-radius: 4px; font-size: 1rem; line-height: 1.7; }
+    .focus-box strong { color: var(--accent); font-weight: 500; }
+
+    /* Nav dots */
+    .nav-dots { position: fixed; right: 32px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 9px; z-index: 50; }
+    .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-tertiary); cursor: pointer; transition: all 0.3s ease; border: none; padding: 0; }
+    .nav-dot.active { background: var(--accent); height: 20px; border-radius: 3px; }
+
+    /* P0 progress */
+    .p0-progress-wrap { display: flex; flex-direction: column; gap: 1.5rem; }
+    .p0-pipeline { display: flex; align-items: stretch; gap: 0; }
+    .p0-stage { flex: 1; padding: 0.7rem 0.5rem; text-align: center; font-size: 0.85rem; font-weight: 500; background: var(--surface-alt); border: 1px solid var(--border); position: relative; color: var(--text-secondary); }
+    .p0-stage:first-child { border-radius: 6px 0 0 6px; }
+    .p0-stage:last-child { border-radius: 0 6px 6px 0; }
+    .p0-stage.active-stage { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+    .p0-stage.done-stage { background: rgba(61,122,74,0.08); border-color: rgba(61,122,74,0.4); color: var(--positive); }
+    .p0-stage .p0-stage-sub { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 0.2rem; }
+    .p0-stage.active-stage .p0-stage-sub { color: var(--accent); opacity: 0.8; }
+    .p0-stage.done-stage .p0-stage-sub { color: var(--positive); opacity: 0.8; }
+    .p0-cycle-box { padding: 1rem 1.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+    .p0-cycle-title { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 0.6rem; }
+    .p0-cycle-flow { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
+    .p0-cycle-step { padding: 0.35rem 0.8rem; background: var(--accent-dim); border-radius: 4px; font-size: 0.85rem; color: var(--accent); font-weight: 500; }
+    .p0-cycle-arrow { color: var(--text-tertiary); font-family: 'Inter', sans-serif; font-size: 0.85rem; }
+    .p0-cycle-note { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; }
+    .p0-cycle-note strong { color: var(--accent); font-weight: 600; }
+    .p0-stages-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .p0-detail-card { padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+    .p0-detail-card.current-card { border-color: var(--accent); }
+    .p0-detail-num { font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600; color: var(--text-tertiary); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
+    .p0-detail-card.current-card .p0-detail-num { color: var(--accent); }
+    .p0-detail-title { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+    .p0-detail-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6; }
+    .p0-bottom-note { padding: 0.8rem 1.2rem; background: var(--accent-dim); border-radius: 4px; font-size: 0.9rem; color: var(--text); text-align: center; font-weight: 500; }
+
+    /* Gate checklist progress bar */
+    .gate-progress { display: flex; align-items: center; gap: 1rem; margin: 1.2rem 0 1.8rem; }
+    .gate-bar-track { flex: 1; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
+    .gate-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+    .gate-pct { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.1rem; color: var(--accent); white-space: nowrap; }
+    .gate-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .gate-cols h4 { font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-bottom: 0.6rem; letter-spacing: 0.04em; }
+    .gate-cols ul { list-style: none; }
+    .gate-cols li { font-size: 0.88rem; padding: 0.3rem 0; color: var(--text-secondary); display: flex; align-items: baseline; gap: 0.5rem; }
+    .gi { font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 700; min-width: 16px; }
+    .gi.ok { color: var(--positive); }
+    .gi.no { color: var(--text-tertiary); }
+
+    /* P0 milestone gantt (월 × 단계 시각화) */
+    .gantt { margin: 0.3rem 0 1rem; }
+    .gantt-row { display: grid; grid-template-columns: 56px repeat(5, 1fr); gap: 0; align-items: center; font-size: 0.78rem; height: 26px; position: relative; }
+    .gantt-row.gh { font-family: 'Inter', sans-serif; font-weight: 600; color: var(--text-tertiary); font-size: 0.68rem; letter-spacing: 0.06em; height: 18px; margin-bottom: 4px; }
+    .gantt-label { font-weight: 500; font-size: 0.74rem; color: var(--text-secondary); }
+    .gantt-cell { padding: 0 2px; }
+    .gantt-cell.gh-m { font-family: 'Inter', sans-serif; }
+    .gantt-bar { height: 17px; border-radius: 3px; padding: 0 8px; display: flex; align-items: center; font-size: 0.68rem; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; position: relative; }
+    .gantt-bar.primary { background: var(--accent); }
+    .gantt-bar.secondary { background: rgba(139,111,71,0.4); color: var(--text); }
+    .gantt-bar.verify { background: var(--positive); }
+    .gantt-now { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--negative); }
+    .gantt-now-label { position: absolute; top: -15px; left: -14px; font-family: 'Inter', sans-serif; font-size: 0.6rem; color: var(--negative); font-weight: 700; }
+
+    /* P0 5-stage status grid (현재 단계 한눈에) */
+    .p0-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .p0-grid .p0-block { background: var(--bg); padding: 0.8rem 0.7rem; text-align: left; }
+    .p0-grid .p0-block.done { background: rgba(61,122,74,0.07); }
+    .p0-grid .p0-block.cur { background: var(--accent-dim); }
+    .pb-num { font-family: 'Inter', sans-serif; font-size: 0.66rem; font-weight: 600; color: var(--text-tertiary); letter-spacing: 0.06em; }
+    .pb-badge { display: inline-block; font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin: 0.3rem 0; }
+    .pb-badge.done { background: rgba(61,122,74,0.14); color: var(--positive); }
+    .pb-badge.cur { background: rgba(139,111,71,0.16); color: var(--accent); }
+    .pb-badge.wait { background: var(--surface-alt); color: var(--text-tertiary); }
+    .pb-name { font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+    .pb-stat { font-size: 0.74rem; color: var(--text-secondary); line-height: 1.4; }
+
+    /* Highlight cards (figma / harness) */
+    .hl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); margin-bottom: 1.5rem; }
+    .hl-cell { background: var(--bg); padding: 1rem; }
+    .hl-cell .hl-val { font-family: 'Inter', sans-serif; font-size: 1.9rem; font-weight: 700; color: var(--positive); line-height: 1; margin-bottom: 0.3rem; }
+    .hl-cell .hl-label { font-size: 0.85rem; color: var(--text); font-weight: 500; margin-bottom: 0.15rem; }
+    .hl-cell .hl-sub { font-size: 0.78rem; color: var(--text-tertiary); line-height: 1.45; }
+    .before-after { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1.2rem; align-items: center; margin-bottom: 1.2rem; }
+    .ba-card { padding: 1rem 1.2rem; border: 1px solid var(--border); border-radius: 6px; }
+    .ba-card.before { opacity: 0.75; }
+    .ba-card.after { border-color: var(--positive); background: rgba(61,122,74,0.06); }
+    .ba-label { font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.4rem; }
+    .ba-card.after .ba-label { color: var(--positive); }
+    .ba-big { font-family: 'Inter', sans-serif; font-size: 1.6rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .ba-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+    .ba-arrow { font-family: 'Inter', sans-serif; font-size: 1.4rem; color: var(--accent); }
+
+    /* Harness flow */
+    .harness-flow { display: flex; align-items: stretch; gap: 0; margin-bottom: 1.2rem; flex-wrap: wrap; }
+    .hf-step { flex: 1; min-width: 100px; padding: 0.7rem 0.5rem; text-align: center; border: 1px solid var(--border); background: var(--surface); position: relative; }
+    .hf-step .hf-n { font-family: 'Inter', sans-serif; font-size: 0.68rem; color: var(--text-tertiary); font-weight: 600; }
+    .hf-step .hf-name { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-top: 0.2rem; }
+    .hf-step.gate-step { background: var(--accent-dim); border-color: var(--accent); }
+    .hf-step.gate-step .hf-name { color: var(--accent); }
+
+    /* Real cases — design gap filling */
+    .case-block { padding: 0.8rem 0; border-bottom: 1px solid var(--border); }
+    .case-block:last-of-type { border-bottom: none; }
+    .case-situation { font-size: 0.92rem; color: var(--text); font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+    .case-situation .case-tag { font-family: 'Inter', sans-serif; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: var(--accent-dim); padding: 2px 7px; border-radius: 3px; }
+    .case-situation .case-desc { font-weight: 400; color: var(--text-secondary); font-size: 0.85rem; }
+    .case-pair { display: grid; grid-template-columns: 1fr 26px 1fr; gap: 0.6rem; align-items: stretch; }
+    .case-side { padding: 0.6rem 0.85rem; border-radius: 5px; font-size: 0.85rem; line-height: 1.55; }
+    .case-side.before { background: var(--surface-alt); color: var(--text-secondary); }
+    .case-side.after { background: rgba(61,122,74,0.07); border: 1px solid rgba(61,122,74,0.3); color: var(--text); }
+    .case-side .cs-h { font-family: 'Inter', sans-serif; font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
+    .case-side.before .cs-h { color: var(--text-tertiary); }
+    .case-side.after .cs-h { color: var(--positive); }
+    .case-arrow { align-self: center; text-align: center; color: var(--accent); font-family: 'Inter', sans-serif; }
+    .fill-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-top: 0.4rem; }
+    .fill-chip { padding: 0.7rem 0.9rem; border: 1px solid var(--border); border-radius: 6px; }
+    .fill-chip .fc-t { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .fill-chip .fc-d { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
+    .fill-chip .fc-d strong { color: var(--positive); font-weight: 600; }
+
+    /* Script-readiness mapping */
+    .script-map { display: flex; flex-direction: column; gap: 0; }
+    .sm-row { display: grid; grid-template-columns: 0.85fr 26px 1.18fr; gap: 0.6rem; align-items: center; padding: 0.62rem 0; border-bottom: 1px solid var(--border); }
+    .sm-row:last-child { border-bottom: none; }
+    .sm-need-t { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 0.12rem; }
+    .sm-need-d { font-size: 0.79rem; color: var(--text-tertiary); line-height: 1.45; }
+    .sm-arrow { text-align: center; color: var(--accent); font-family: 'Inter', sans-serif; font-size: 1.1rem; }
+    .sm-rule { padding: 0.5rem 0.8rem; background: var(--accent-dim); border-left: 2px solid var(--accent); border-radius: 0 4px 4px 0; }
+    .sm-rule-t { font-size: 0.89rem; font-weight: 600; color: var(--text); margin-bottom: 0.12rem; }
+    .sm-rule-t .ref { color: var(--text-tertiary); font-size: 0.73rem; font-weight: 400; margin-left: 0.3rem; }
+    .sm-rule-d { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.45; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slide, .slide .animate { transition: none !important; }
+    }
+    @media print {
+      .viz-menu, .nav-dots { display: none !important; }
+      .slides { height: auto; overflow: visible; }
+      .slide { position: relative !important; opacity: 1 !important; transform: none !important; pointer-events: auto !important; page-break-after: always; height: auto; min-height: 100vh; }
+      body { overflow: visible; }
+    }
+
+    /* Track badge */
+    .track-badge { display: inline-block; font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 3px; vertical-align: middle; margin-left: 0.5rem; }
+    .track-badge.t1 { background: rgba(232,112,112,0.12); color: var(--negative); }
+    .track-badge.t2 { background: var(--accent-dim); color: var(--accent); }
+    .track-badge.new { background: rgba(61,122,74,0.13); color: var(--positive); }
+
+    .notion-link { font-size: 0.85rem; color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); font-family: 'Inter', sans-serif; font-weight: 400; margin-left: 0.5rem; text-transform: none; letter-spacing: 0; }
+    .notion-link-inline { color: inherit; text-decoration: none; border-bottom: 1px solid var(--text-tertiary); }
+
+    .slide::-webkit-scrollbar { width: 4px; }
+    .slide::-webkit-scrollbar-track { background: transparent; }
+    .slide::-webkit-scrollbar-thumb { background: var(--text-tertiary); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<nav class="viz-menu">
+  <div class="menu-left">
+    <span style="font-family:'Inter',sans-serif;font-weight:500;color:var(--text);letter-spacing:0.05em;">XpERP TC · 월간 종합</span>
+    <span class="slide-counter" id="slideCounter">1 / 15</span>
+  </div>
+  <div class="menu-right">
+    <button onclick="toggleTheme()" id="themeBtn">Dark</button>
+    <button onclick="downloadPNG()">PNG</button>
+    <button onclick="window.print()">Print</button>
+  </div>
+</nav>
+
+<div class="nav-dots" id="navDots"></div>
+
+<div class="slides" id="slidesContainer">
+
+  <!-- Slide 1: Hero -->
+  <section class="slide hero-slide active" data-slide="0">
+    <div class="hero-pre animate">월간 종합 보고 · 2026.04 ~ 05</div>
+    <h1 class="hero-title animate">XpERP TC<br><em>자동화 테스트 시스템</em></h1>
+    <p class="hero-sub animate">Figma 설계도 &nbsp;→&nbsp; TBT &nbsp;→&nbsp; 테스트케이스<br><em>D2T 파이프라인</em> &nbsp;·&nbsp; P0 진행 현황</p>
+    <div class="hero-meta animate">
+      <span>2026-04-07 → 05-27</span>
+      <span>P0 진행중</span>
+    </div>
+  </section>
+
+  <!-- Slide 2: Executive Summary -->
+  <section class="slide" data-slide="1">
+    <div class="slide-title animate">진행 상황 요약 — Where We Are Now</div>
+
+    <div class="metrics-tier animate">
+      <div class="tier-header accent-tier">품질 — 규칙 기반 생성의 수렴</div>
+      <div class="metrics-grid">
+        <div class="metric-cell">
+          <div class="metric-val accent">84</div>
+          <div class="metric-label">TBT 생성 품질 점수</div>
+          <div class="metric-sub">v41 70.7 → 현재 ~84 · 합격선 60 상시 통과 <a href="https://www.notion.so/344e706187e281d2a1cee25cb8667730" target="_blank" class="notion-link" style="font-size:0.72rem;margin-left:0.2rem;">근거↗</a></div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-val accent">82</div>
+          <div class="metric-label">테스트케이스 품질 점수</div>
+          <div class="metric-sub">시험절차·예상결과 자동 누적 도입 <a href="https://www.notion.so/336e706187e281b9a61bf20d360d8569" target="_blank" class="notion-link" style="font-size:0.72rem;margin-left:0.2rem;">근거↗</a></div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-val positive">~92%</div>
+          <div class="metric-label">자동 점검 통과 (공문발송)</div>
+          <div class="metric-sub">85% → 100% 도달(피크) → 현재 ~92% (검증 룰 추가로 분모 ↑, 회귀 아님) <a href="https://www.notion.so/33be706187e28116a9b2f845b687ba21" target="_blank" class="notion-link" style="font-size:0.72rem;margin-left:0.2rem;">근거↗</a></div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-val accent">~80</div>
+          <div class="metric-label">생성 규칙 (R0 + T 계열)</div>
+          <div class="metric-sub">하드코딩 금지 원칙 위에 누적된 자산 <a href="https://www.notion.so/336e706187e281b9a61bf20d360d8569" target="_blank" class="notion-link" style="font-size:0.72rem;margin-left:0.2rem;">근거↗</a></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metrics-tier animate">
+      <div class="tier-header positive-tier">이번 분기 돌파 — 노선이 실제로 작동함을 입증</div>
+      <div class="metrics-grid">
+        <div class="metric-cell">
+          <div class="metric-val positive">2번째</div>
+          <div class="metric-label">다른 기획서 자동 적용 ★</div>
+          <div class="metric-sub">전자고지서 — 5개 화면 전수 · 0 → 22행 (분량 아닌 범용성 입증) <a href="https://www.notion.so/364e706187e2813e9251e3fbb9537698" target="_blank" class="notion-link" style="font-size:0.72rem;margin-left:0.2rem;">근거↗</a></div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-val positive">35건</div>
+          <div class="metric-label">외부 피드백 처리 (2달 누적)</div>
+          <div class="metric-sub">4개 사이클 (4·11·12·8건) · 최근 사이클 84.6% 해소 <a href="https://www.notion.so/33be706187e28116a9b2f845b687ba21" target="_blank" class="notion-link" style="font-size:0.72rem;margin-left:0.2rem;">근거↗</a></div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-val positive">4회</div>
+          <div class="metric-label">자동 롤백 안전장치 작동</div>
+          <div class="metric-sub">위험한 변경을 스스로 감지·복원 <a href="https://www.notion.so/33be706187e28116a9b2f845b687ba21" target="_blank" class="notion-link" style="font-size:0.72rem;margin-left:0.2rem;">근거↗</a></div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-val accent">9/16</div>
+          <div class="metric-label">P0 게이트 충족 (+부분 2)</div>
+          <div class="metric-sub">정본 §2.7 기준 단일 소스 · Script/QA 단계 남음 · 목표 2026.08 <a href="https://www.notion.so/36ee706187e281a7ab07e4d8a3a76177" target="_blank" class="notion-link" style="font-size:0.72rem;margin-left:0.2rem;">근거↗</a></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap-bridge animate">
+      규칙 기반 생성 + 자동 점검 + 사람 검토를 반복하며, 지난 두 달간 <strong>품질이 70 → 84점으로 수렴</strong>했습니다.
+      나아가 <strong>같은 도구를 다른 기획서로 확장</strong>하고, <strong>사람·AI 협업 사이클을 처음으로 완주</strong>하며 P0 앞 단계를 안정 구간에 올려놓았습니다.
+    </div>
+  </section>
+
+  <!-- Slide 3: What the system does -->
+  <section class="slide" data-slide="2">
+    <div class="slide-title animate">시스템이 하는 일 — What The System Does <a href="https://www.notion.so/338e706187e281d7a61cefa0c5c3e3e0" target="_blank" class="notion-link">파이프라인 설계</a></div>
+
+    <div class="pipeline-flow animate" style="margin-bottom:1.5rem;">
+      <span class="pipeline-step">UI 기획서 (Figma)</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-step"><strong>TBT 생성</strong></span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-step"><strong>TC 변환</strong></span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-step">스크립트 생성</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-step">QA 검증</span>
+    </div>
+
+    <div class="features-container animate" style="grid-template-columns:1fr;">
+      <div class="feature-block" style="padding-top:0;">
+        <div class="feature-block-label">D2T PIPELINE — 이번 보고의 초점</div>
+        <h3>설계도를 테스트로 (Design-to-Test)</h3>
+        <div class="feature-block-desc">UI 기획서를 입력하면, 사람이 손으로 작성하던 테스트 문서를 규칙 기반으로 자동 생성합니다. 매 단계마다 자동 점검과 사람 검토가 짝을 이룹니다.</div>
+        <div class="feature-item"><span class="fi-name">TBT 생성</span><span class="fi-desc">화면 구성요소를 트리로 분류하고, 요소별 점검 항목을 도출</span></div>
+        <div class="feature-item"><span class="fi-name">TC 변환</span><span class="fi-desc">TBT의 각 항목을 사전조건 · 시험절차 · 예상결과로 변환</span></div>
+        <div class="feature-item"><span class="fi-name">자동 점검</span><span class="fi-desc">생성 결과가 규칙을 지켰는지 매 생성마다 자동 검사 + 사람 검토 사이클</span></div>
+      </div>
+    </div>
+
+    <div class="gap-bridge animate" style="margin-top:1rem;">
+      이번 보고는 파이프라인의 <strong>첫 두 단계(TBT 생성 · TC 변환)</strong>에 집중합니다 — 앞 단계 품질이 뒷 단계 품질을 결정하므로, 순차적으로 안정화하고 있습니다.
+    </div>
+  </section>
+
+  <!-- Slide 5: Customer Q&A -->
+  <section class="slide" data-slide="4">
+    <div class="slide-title animate">Customer Q&A</div>
+
+    <div class="qa-block animate">
+      <div class="qa-q">AI 하나로 테스트를 전부 자동 생성할 수는 없나요?</div>
+      <div class="qa-a">
+        순수 AI 단독 생성은 <strong>약 57점(F)</strong> 수준에 머뭅니다. 화면 대분류는 잘 맞히지만, 사전조건·시험절차·예상결과 같은 <strong>업무 맥락 항목의 정확도가 낮습니다</strong>.<br>
+        해법은 <strong>사람의 작업 규칙을 정리해 AI에게 학습시키고, 생성 → 사람 검토 → 규칙 개선을 반복</strong>하는 것입니다. 이 노선으로 품질이 70 → 84점까지 수렴했습니다.
+        <div class="qa-detail">
+          <span>AI 단독 <em>57.4점 (F)</em></span>
+          <span>규칙 기반 <em>84점 (합격선 60)</em></span>
+          <span>F1 기준 <em>약 2배 향상</em></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block animate">
+      <div class="qa-q">한 시스템에 맞춘 규칙이, 다른 기획서에도 통하나요?</div>
+      <div class="qa-a">
+        이번 분기에 <strong>처음으로 입증했습니다</strong>. 공문발송 시스템용으로 다듬은 동일한 도구를, 코드 수정 없이 <strong>전자고지서 기획서에 적용</strong>해 메뉴트리를 자동 생성했습니다(5개 화면 전수, 0 → 22행).<br>
+        기획서마다 다른 작성 습관(라벨 이름, 자리표시자 등)은 <strong>규칙의 "별칭/차단" 확장</strong>으로 흡수했고, 기존 시스템에는 영향(회귀) 0건이었습니다.
+        <div class="qa-detail">
+          <span>적용 기획서 <em>2번째 (전자고지서)</em></span>
+          <span>인식 화면 <em>0 → 5</em></span>
+          <span>기존 영향 <em>회귀 0건</em></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-block animate">
+      <div class="qa-q">검토 의견(피드백)은 어떻게 반영되나요?</div>
+      <div class="qa-a">
+        검토 의견을 받으면 <strong>6단계 협업 사이클</strong>(의견 추출 → 원인 분석 → 규칙 보완 → 재생성 → 채점 → 채택)이 돌고, 사람이 두 곳에서 승인합니다. 지난 두 달간 <strong>4개 사이클로 누적 35건</strong>(공문발송 4 · 11 · 12 · 8건)을 처리했고, 가장 최근의 <strong>대표 사이클에서는 12건 중 84.6%를 해소</strong>했습니다.
+        <div class="qa-detail">
+          <span>2달 누적 <em>35건 · 4개 사이클</em></span>
+          <span>대표 사이클 <em>12건 · 84.6% 해소</em></span>
+          <span>처리 방식 <em>자동 + 사람 승인 2곳</em></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 9: Internal rules → completeness -->
+  <section class="slide" data-slide="8">
+    <div class="slide-title animate">내부 규칙 자산 — TBT/TC 완성도 엔진 <span class="track-badge new">P0 핵심</span> <a href="https://www.notion.so/336e706187e281b9a61bf20d360d8569" target="_blank" class="notion-link">규칙 정의 현황</a></div>
+
+    <div class="conclusion-box animate" style="margin-bottom:1.2rem;padding:0.9rem 1.2rem;font-size:0.92rem;">
+      <strong>규칙은 코드가 아니라 자산입니다.</strong> 사람의 작업 원칙을 규칙 한 줄로 정의하면 <strong>모든 버전·모든 기획서</strong>에 적용되고, 각 규칙은 <strong>"재발 방지 검사"와 짝</strong>을 이뤄 한 번 올린 완성도가 다시 무너지지 않게 지킵니다. 현재 생성 규칙 <strong>약 80개(R0·T 계열) + 재발 방지 검사 60여 개</strong>가 누적된 상태입니다.
+    </div>
+
+    <table class="ed-table animate">
+      <thead>
+        <tr><th>규칙 (완성도 영역)</th><th>해결한 완성도 문제</th><th style="text-align:right;">효과 (Before → After)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>하드코딩 금지 <span style="color:var(--text-tertiary);font-size:0.78rem;">R0-29</span></td><td>한 시스템 전용 값을 코드에서 배제 — 다른 기획서에도 통하게</td><td style="text-align:right;color:var(--positive);">전자고지서 5화면 · 0 → 22행 자동</td></tr>
+        <tr><td>팝업 흐름 완결 <span style="color:var(--text-tertiary);font-size:0.78rem;">R0-17+</span></td><td>팝업이 열리면 닫는 절차가 1:1로 따라오도록 자동 생성</td><td style="text-align:right;color:var(--positive);">흐름 완결 79% → 98%</td></tr>
+        <tr><td>군더더기 제거 <span style="color:var(--text-tertiary);font-size:0.78rem;">placeholder·모호 PR</span></td><td>빈 자리표시자와 모호한 사전조건을 자동 정리</td><td style="text-align:right;color:var(--positive);">자리표시자 37 → 0 · 모호 PR 12 → 0</td></tr>
+        <tr><td>동작 구조 정규화 <span style="color:var(--text-tertiary);font-size:0.78rem;">R0-2+</span></td><td>사전조건 → 동작 → 결과의 3단 구조로 자동 재배치</td><td style="text-align:right;color:var(--positive);">구조 정합 24% → 70%</td></tr>
+        <tr><td>시험절차 자동 누적 <span style="color:var(--text-tertiary);font-size:0.78rem;">T-3</span></td><td>상위 단계까지 시험절차에 쌓아 깊은 체인 복원</td><td style="text-align:right;color:var(--positive);">평균 1.0 → 1.6단계 (정답의 77~81%)</td></tr>
+        <tr><td>화면 진입 경로 사전조건 <span style="color:var(--text-tertiary);font-size:0.78rem;">T-22</span></td><td>로그인 → 대시보드 → 상세 경로를 사전조건에 누적</td><td style="text-align:right;color:var(--accent);">흐름 완결성 보강 착수 (5/27)</td></tr>
+        <tr><td>예상결과 실재화 <span style="color:var(--text-tertiary);font-size:0.78rem;">R0-44·T-21</span></td><td>막연한 문구 대신 Figma의 실제 모달 메시지를 사용</td><td style="text-align:right;color:var(--positive);">"확인 모달 노출" 등 실제 텍스트</td></tr>
+      </tbody>
+    </table>
+
+    <div class="gap-bridge animate" style="margin-top:1.2rem;">
+      이 규칙들이 합쳐져 <strong>TBT 70 → 84점, TC 78 → 82점</strong>의 완성도 향상을 만들었습니다. 다음 슬라이드의 수렴 곡선이 그 누적 효과입니다.
+    </div>
+  </section>
+
+  <!-- Slide 10: Quality convergence (chart) -->
+  <section class="slide" data-slide="9">
+    <div class="slide-title animate">노선 검증 — 품질 수렴 곡선 <span class="track-badge new">검증 완료</span> <a href="https://www.notion.so/33be706187e28116a9b2f845b687ba21" target="_blank" class="notion-link">버전 히스토리 v1~v60</a></div>
+
+    <div class="chart-section animate">
+      <div class="chart-wrap tall"><canvas id="scoreChart"></canvas></div>
+    </div>
+
+    <div class="metrics-grid animate" style="margin-bottom:1.2rem;">
+      <div class="metric-cell"><div class="metric-val accent">+13.3</div><div class="metric-label">TBT 품질 상승폭</div><div class="metric-sub">v41 70.7 → ~84</div></div>
+      <div class="metric-cell"><div class="metric-val accent">+4.0</div><div class="metric-label">TC 품질 상승폭</div><div class="metric-sub">78.3 → 82.3 (절차 누적)</div></div>
+      <div class="metric-cell"><div class="metric-val positive">상시</div><div class="metric-label">합격선 60 통과</div><div class="metric-sub">매 버전 자동 점검</div></div>
+      <div class="metric-cell"><div class="metric-val positive">+7%p</div><div class="metric-label">자동 점검 통과율</div><div class="metric-sub">공문발송 85% → ~92% (피크 100%, 검증 룰 추가)</div></div>
+    </div>
+
+    <div class="gap-bridge animate">
+      품질 곡선이 <strong>84점 부근에서 안정 수렴</strong>했습니다. 최근 일부 구간의 소폭 등락(84.5 → 83.9)은 분기 표기 분리·권한 시트 필터로 <strong>집계 분모가 바뀐 산술 효과</strong>이며, 진짜 결함 회귀는 0건입니다 — <strong>자동 점검 통과율 향상이 실질 진보 신호</strong>입니다.<br><span style="color:var(--text-tertiary);font-size:0.92em;">※ 곡선은 종전 측정 기준(역사적). 화면 진입 완결성(FL-2) 측정 정밀화를 5/28 반영하면 흐름 완결성 ~99%, <strong>최신 종합 ~88</strong> (생성물 불변).</span>
+    </div>
+  </section>
+
+  <!-- Slide 11: Real cases — filling the design gap -->
+  <section class="slide" data-slide="10">
+    <div class="slide-title animate">구체화 안 된 디자인 → 완성된 테스트 <span class="track-badge new">실제 사례</span> <a href="https://www.notion.so/364e706187e281778273eb73f5156ec2" target="_blank" class="notion-link">Description 구조 추론</a></div>
+
+    <div class="conclusion-box animate" style="margin-bottom:1.1rem;padding:0.85rem 1.2rem;font-size:0.9rem;">
+      UI 디자인은 <strong>사람이 보면 이해</strong>하지만, 기계가 테스트로 옮기기엔 <strong>자리표시자·암묵적 흐름·막연한 문구</strong>로 비어 있는 부분이 많습니다. 파이프라인은 그 빈틈을 도메인 규칙으로 채워, 디자인이 "말하지 않은 것"까지 완성된 테스트 항목으로 만듭니다. 아래는 공문발송·전자고지서에서 나온 <strong>실제 변환 사례</strong>입니다.
+    </div>
+
+    <div class="animate">
+      <div class="case-block">
+        <div class="case-situation"><span class="case-tag">텍스트 추론</span>모달 안내 본문 완성<span class="case-desc">— 디자인엔 빨간 동그라미 번호와 흩어진 문구만 있고, 무슨 안내가 뜨는지 구조화되어 있지 않음</span></div>
+        <div class="case-pair">
+          <div class="case-side before"><div class="cs-h">Before — 막연한 일반 서술</div>"아이디/비밀번호 초기화 모달팝업 표출"</div>
+          <div class="case-arrow">→</div>
+          <div class="case-side after"><div class="cs-h">After — Figma 실제 모달 제목 + 본문</div>"비밀번호 변경 안내 표출<br>이메일로 아이디·비밀번호를 발신하였습니다.<br>로그인 후 비밀번호를 변경해 주세요."</div>
+        </div>
+      </div>
+
+      <div class="case-block">
+        <div class="case-situation"><span class="case-tag">결과 실재화</span>조건 분기의 예상결과 채우기<span class="case-desc">— "비밀번호가 같지 않을 시"라는 조건만 있고, 그래서 무엇이 떠야 하는지가 비어 있음</span></div>
+        <div class="case-pair">
+          <div class="case-side before"><div class="cs-h">Before — 자동 채움 임시 문구</div>"(비밀번호가) 같지 않을 시 출력되어야 한다"</div>
+          <div class="case-arrow">→</div>
+          <div class="case-side after"><div class="cs-h">After — Figma 실제 분기 메시지</div>"비밀번호 확인 모달팝업 노출되어야 한다"</div>
+        </div>
+      </div>
+
+      <div class="case-block">
+        <div class="case-situation"><span class="case-tag">자리표시자 차단</span>덜 그려진 목업 정리<span class="case-desc">— 목업에 '타이틀', '내용' 같은 자리표시자가 그대로 남아 테스트로 유입될 위험</span></div>
+        <div class="case-pair">
+          <div class="case-side before"><div class="cs-h">Before — 자리표시자가 그대로 유입</div>화면 제목 = "타이틀" / 항목 = "내용"</div>
+          <div class="case-arrow">→</div>
+          <div class="case-side after"><div class="cs-h">After — 감지 후 실제 화면명으로 대체</div>자리표시자 자동 차단 → 프레임 이름 기반 실제 화면명 (오염 5건 → 0건)</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:0.82rem;color:var(--text-tertiary);margin:1rem 0 0.5rem;font-family:'Inter',sans-serif;letter-spacing:0.06em;">디자인이 그리지 않은 "흐름"도 복원합니다</div>
+    <div class="fill-chips animate">
+      <div class="fill-chip"><div class="fc-t">팝업 열림만 그려짐</div><div class="fc-d">→ 닫는 절차를 1:1 자동 생성 <strong>(흐름 완결 79 → 98%)</strong></div></div>
+      <div class="fill-chip"><div class="fc-t">화면 1개만 그려짐</div><div class="fc-d">→ 진입 경로 복원 <strong>(로그인 → 대시보드 → 상세)</strong></div></div>
+      <div class="fill-chip"><div class="fc-t">"확인 클릭 → 확인 활성" 동어반복</div><div class="fc-d">→ 올바른 <strong>입력 → 결과</strong> 논리로 재구성</div></div>
+    </div>
+  </section>
+
+  <!-- Slide 12: Figma universality -->
+  <section class="slide" data-slide="11">
+    <div class="slide-title animate">돌파 ① — 다른 기획서로의 확장 <span class="track-badge new">★ 4주 이월 부채 해소</span> <a href="https://www.notion.so/35ee706187e28141bfa0daf709144b05" target="_blank" class="notion-link">범용성 검증 발견 보고</a></div>
+
+    <div class="before-after animate">
+      <div class="ba-card before">
+        <div class="ba-label">Before (5/12 발견)</div>
+        <div class="ba-big" style="color:var(--negative);">0 화면</div>
+        <div class="ba-desc">전자고지서 Figma를 같은 도구에 넣자 화면을 하나도 인식 못 함 — 작성자의 라벨링 습관이 달랐기 때문.</div>
+      </div>
+      <div class="ba-arrow">→</div>
+      <div class="ba-card after">
+        <div class="ba-label">After (5/18 해소)</div>
+        <div class="ba-big" style="color:var(--positive);">22행 + 본문</div>
+        <div class="ba-desc">규칙의 별칭/차단 확장만으로 진짜 화면 5개 전수 인식 → 메뉴트리 22행 자동 생성. 모달 제목·본문·버튼까지 출력.</div>
+      </div>
+    </div>
+
+    <div class="hl-grid animate">
+      <div class="hl-cell"><div class="hl-val">5</div><div class="hl-label">인식 화면</div><div class="hl-sub">9개 프레임 중 진짜 화면 5개 (메타 4개 자동 스킵)</div></div>
+      <div class="hl-cell"><div class="hl-val">22</div><div class="hl-label">메뉴트리 행 (5화면 전수)</div><div class="hl-sub">0 → 22 (모달 텍스트 흡수 포함)</div></div>
+      <div class="hl-cell"><div class="hl-val">94%</div><div class="hl-label">시험절차 충실도</div><div class="hl-sub">평균 1.95단계 (정답의 94%)</div></div>
+      <div class="hl-cell"><div class="hl-val">0건</div><div class="hl-label">기존 시스템 영향</div><div class="hl-sub">공문발송 회귀 0 — 별칭은 "추가만" 허용</div></div>
+    </div>
+
+    <div class="conclusion-box positive animate">
+      <strong>의미:</strong> "한 곳에 맞춘 규칙이 다른 곳에도 통하는가"는 이 프로젝트의 핵심 가설이었습니다. 같은 도구·같은 규칙을 코드 수정 없이 적용해 <strong>두 번째 기획서를 자동 생성</strong>함으로써, "하드코딩 금지" 설계 원칙이 실제로 작동함을 입증했습니다.
+      사용자가 보낸 Figma 이미지("비밀번호 변경 안내" 모달 + 본문 + 확인 버튼)가 메뉴트리에 <strong>완전 일치</strong>하여 출력되었습니다.
+    </div>
+  </section>
+
+  <!-- Slide 11: Self-evolving harness -->
+  <section class="slide" data-slide="10">
+    <div class="slide-title animate">돌파 ② — 사람·AI 협업 사이클 첫 완주 <span class="track-badge new">★ 자가 진화</span> <a href="https://www.notion.so/365e706187e2818f8036e3976d54a1b5" target="_blank" class="notion-link">v60.1 피드백 사이클</a></div>
+
+    <div class="harness-flow animate">
+      <div class="hf-step"><div class="hf-n">1</div><div class="hf-name">의견 추출</div></div>
+      <div class="hf-step"><div class="hf-n">2</div><div class="hf-name">원인 분석</div></div>
+      <div class="hf-step gate-step"><div class="hf-n">3 · 승인 ①</div><div class="hf-name">규칙 보완</div></div>
+      <div class="hf-step"><div class="hf-n">4</div><div class="hf-name">재생성</div></div>
+      <div class="hf-step"><div class="hf-n">5</div><div class="hf-name">채점</div></div>
+      <div class="hf-step gate-step"><div class="hf-n">6 · 승인 ②</div><div class="hf-name">채택 결정</div></div>
+    </div>
+
+    <div class="hl-grid animate">
+      <div class="hl-cell"><div class="hl-val">12건</div><div class="hl-label">처리한 외부 피드백</div><div class="hl-sub">9건 완전 + 4건 부분 = 가중 84.6%</div></div>
+      <div class="hl-cell"><div class="hl-val">2곳</div><div class="hl-label">사람 승인 게이트</div><div class="hl-sub">규칙 보완 후 / 채택 결정 후 정상 정지</div></div>
+      <div class="hl-cell"><div class="hl-val">9건</div><div class="hl-label">재발 방지 검증 룰 신설</div><div class="hl-sub">같은 결함이 다음에 자동 탐지되도록</div></div>
+      <div class="hl-cell"><div class="hl-val">0건</div><div class="hl-label">망가진 문서 채택</div><div class="hl-sub">회귀 감지 시 직전 정상본으로 즉시 롤백 (실제 4회 작동)</div></div>
+    </div>
+
+    <div class="conclusion-box positive animate" style="margin-bottom:1rem;">
+      <strong>안전성이 가장 큰 성과입니다.</strong> 자동 사이클(하네스 엔지니어링)을 도입한 두 달간, 어떤 변경도 <strong>문서를 완전히 망가뜨린 채 채택된 적이 한 번도 없습니다</strong>. 위험한 변경은 채택 전 <strong>자동 점검·채점에서 걸러지고</strong>, 회귀가 감지되면 <strong>즉시 직전 정상본(baseline)으로 롤백</strong>했습니다(실제 4회 작동). 덕분에 큰 개선도 "시도 → 문제 시 되돌리기"로 두려움 없이 전진할 수 있었습니다.
+    </div>
+    <div class="gap-bridge animate">
+      비결은 규칙을 고칠 때 <strong>"재발 방지 검사 룰"을 짝으로 함께</strong> 만들어 두는 것 — 한 번 잡은 결함이 다시 들어오면 자동 감지되고, 자동 검사가 잔존 문제를 짚어 다음 개선을 스스로 점화합니다.
+    </div>
+  </section>
+
+  <!-- Slide 12: Quality scoring system -->
+  <section class="slide" data-slide="11">
+    <div class="slide-title animate">품질을 어떻게 측정하는가 <a href="https://www.notion.so/344e706187e281d2a1cee25cb8667730" target="_blank" class="notion-link">평가 기준</a></div>
+
+    <div class="conclusion-box animate" style="margin-bottom:1.2rem;padding:0.85rem 1.2rem;font-size:0.9rem;">
+      <strong>산식:</strong> 5개 카테고리 · 25+개 메트릭에 <strong>가중치</strong>를 적용한 가중평균 × 100. 메트릭마다 "규칙을 지킨 행 ÷ 검사 대상 행"을 점수화하고, 카테고리 가중치(아래 막대 우측)로 합산합니다. <strong>합격선 60점</strong> 미달 시 다음 단계(TC) 진행 불가 — 매 생성마다 자동 실행되어 사람 검토 없이도 품질 하락을 즉시 포착합니다.
+    </div>
+
+    <div class="animate" style="margin-bottom:1.3rem;">
+      <div style="font-family:'Inter',sans-serif;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:0.7rem;">카테고리별 점수 (메뉴트리 기준) — 막대 색: <span style="color:var(--positive);">안정</span> / <span style="color:var(--accent);">양호</span></div>
+      <div class="area-bar"><span class="ab-label" style="width:96px;">규칙 준수</span><div class="ab-track"><div class="ab-fill" style="width:85%;background:var(--accent);"></div></div><span class="ab-pct">85%</span><span class="qv-meta">12 메트릭 · 가중 58</span></div>
+      <div class="area-bar"><span class="ab-label" style="width:96px;">흐름 완결성</span><div class="ab-track"><div class="ab-fill" style="width:99%;background:var(--positive);"></div></div><span class="ab-pct">99%</span><span class="qv-meta">2 메트릭 · 가중 13</span></div>
+      <div class="area-bar"><span class="ab-label" style="width:96px;">데이터 품질</span><div class="ab-track"><div class="ab-fill" style="width:82%;background:var(--accent);"></div></div><span class="ab-pct">82%</span><span class="qv-meta">3 메트릭 · 가중 17</span></div>
+      <div class="area-bar"><span class="ab-label" style="width:96px;">재발 방지</span><div class="ab-track"><div class="ab-fill" style="width:100%;background:var(--positive);"></div></div><span class="ab-pct">100%</span><span class="qv-meta">4 메트릭 · 가중 17</span></div>
+      <div class="area-bar"><span class="ab-label" style="width:96px;">원문 추적</span><div class="ab-track"><div class="ab-fill" style="width:93%;background:var(--positive);"></div></div><span class="ab-pct">93%</span><span class="qv-meta">4 메트릭 · 가중 21</span></div>
+    </div>
+
+    <div style="font-family:'Inter',sans-serif;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:0.7rem;" class="animate">측정은 3겹으로 — 자동에서 사람까지</div>
+    <div class="p0-stages-detail animate" style="margin-bottom:1.2rem;">
+      <div class="p0-detail-card">
+        <div class="p0-detail-num">Layer 1 · 자동 채점</div>
+        <div class="p0-detail-title">매 생성 시 25+ 메트릭</div>
+        <div class="p0-detail-desc">생성 직후 모든 규칙 준수 여부를 자동 계산. 합격선 60점 미달 시 다음 단계 진행 차단.</div>
+      </div>
+      <div class="p0-detail-card">
+        <div class="p0-detail-num">Layer 2 · 구조 게이트</div>
+        <div class="p0-detail-title">정답 없이 구조 완전성</div>
+        <div class="p0-detail-desc">검증 행 패턴 · 사전조건 커버리지 · 흐름 미연결 · 행 수 안정성 · 멱등성(2회 실행 100% 동일)을 측정.</div>
+      </div>
+      <div class="p0-detail-card">
+        <div class="p0-detail-num">Layer 3 · 사람 검증</div>
+        <div class="p0-detail-title">검토 요청 + 피드백 사이클</div>
+        <div class="p0-detail-desc">외부 검토자에게 검토 요청서 등록 → 받은 피드백을 6단계 협업 사이클로 반영.</div>
+      </div>
+    </div>
+
+    <div class="gap-bridge animate">
+      이 채점의 강점은 <strong>Reference(정답) 없이 규칙 준수도만으로</strong> 측정한다는 점 — 정답본이 없는 새 기획서도 즉시 평가할 수 있습니다. <strong>매 생성마다 자동 실행</strong>되어 사람 검토 전에 품질 하락을 포착하고, 카테고리별 점수가 약한 축(데이터 품질·경계값)을 드러내 <strong>다음 보강 대상을 가리킵니다</strong>. 자동 채점이 놓칠 수 있는 *의미적 정확성*은 아래 <strong>3겹 측정의 Layer 3(사람 검토)</strong>가 메워, 측정 신뢰도를 확보합니다.
+    </div>
+  </section>
+
+  <!-- Slide: Script-readiness groundwork -->
+  <section class="slide" data-slide="12">
+    <div class="slide-title animate">스크립트화 준비 — 실행 가능한 테스트로 <span class="track-badge new">다음 단계 (6월~)</span> <a href="https://www.notion.so/338e706187e281d7a61cefa0c5c3e3e0" target="_blank" class="notion-link">파이프라인 설계</a></div>
+
+    <div class="conclusion-box animate" style="margin-bottom:1.1rem;padding:0.85rem 1.2rem;font-size:0.9rem;">
+      파이프라인의 다음 단계는 <strong>TC → 자동화 스크립트(Playwright)</strong> 변환입니다. 스크립트는 사람과 달리 <strong>암묵적 맥락을 읽지 못하므로</strong>, ① 어디로 이동하고 ② 무엇을 순서대로 ③ 어떤 요소를 ④ 어떻게 검증할지가 <strong>모두 명시</strong>되어야 실행됩니다. 그래서 이번 분기 TBT/TC 룰을 "완성도"뿐 아니라 <strong>"기계 실행 가능성" 기준으로도 다듬어</strong> 다음 단계의 포석을 미리 깔았습니다.
+    </div>
+
+    <div class="script-map animate">
+      <div class="sm-row">
+        <div><div class="sm-need-t">① 어디로 이동? <span style="font-weight:400;color:var(--text-tertiary);font-size:0.8rem;">(네비게이션)</span></div><div class="sm-need-d">스크립트는 대상 화면을 직접 찾아 들어가야 함</div></div>
+        <div class="sm-arrow">→</div>
+        <div class="sm-rule"><div class="sm-rule-t">화면 진입 경로를 사전조건에 누적<span class="ref">T-22</span></div><div class="sm-rule-d">로그인 → 대시보드 → 상세 경로를 사전조건에 쌓아 둠 → 그대로 스크립트의 이동 시퀀스가 됨</div></div>
+      </div>
+      <div class="sm-row">
+        <div><div class="sm-need-t">② 무엇을 순서대로? <span style="font-weight:400;color:var(--text-tertiary);font-size:0.8rem;">(액션 시퀀스)</span></div><div class="sm-need-d">단계별 동작이 빠짐없이 이어져야 재생 가능</div></div>
+        <div class="sm-arrow">→</div>
+        <div class="sm-rule"><div class="sm-rule-t">시험절차 자동 누적<span class="ref">T-3</span></div><div class="sm-rule-d">상위 단계까지 절차를 복원 (평균 1.0 → 1.6단계) → 스크립트가 따라갈 동작 순서를 완성</div></div>
+      </div>
+      <div class="sm-row">
+        <div><div class="sm-need-t">③ 어떤 요소를? <span style="font-weight:400;color:var(--text-tertiary);font-size:0.8rem;">(요소 식별 · 셀렉터)</span></div><div class="sm-need-d">클릭·입력할 화면 요소를 특정할 수 있어야 함</div></div>
+        <div class="sm-arrow">→</div>
+        <div class="sm-rule"><div class="sm-rule-t">번호표기 ↔ Figma 좌표 매핑 + 실제 텍스트 사용<span class="ref">R0-30 · R0-32</span></div><div class="sm-rule-d">빨간 동그라미 번호를 실제 Figma 요소·텍스트에 연결 → 스크립트 셀렉터(로케이터)의 토대 마련</div></div>
+      </div>
+      <div class="sm-row">
+        <div><div class="sm-need-t">④ 무엇을 검증? <span style="font-weight:400;color:var(--text-tertiary);font-size:0.8rem;">(assertion)</span></div><div class="sm-need-d">"무엇이 떠야 맞는지"가 실제 값으로 있어야 검증 가능</div></div>
+        <div class="sm-arrow">→</div>
+        <div class="sm-rule"><div class="sm-rule-t">예상결과 실재화 + 자기참조 차단<span class="ref">R0-44 · T-21 · R0-45</span></div><div class="sm-rule-d">막연한 문구 대신 실제 모달 메시지를 기대값으로, 동어반복은 입력→결과로 재구성 → 그대로 검증문이 됨</div></div>
+      </div>
+      <div class="sm-row">
+        <div><div class="sm-need-t">⑤ 반복 실행 안정성 <span style="font-weight:400;color:var(--text-tertiary);font-size:0.8rem;">(재현성·정리)</span></div><div class="sm-need-d">매번 같은 결과 + 연 것은 닫아야 다음 실행에 영향 없음</div></div>
+        <div class="sm-arrow">→</div>
+        <div class="sm-rule"><div class="sm-rule-t">팝업 열림·닫힘 1:1 + 멱등성 확보<span class="ref">R0-17+ · L2-5</span></div><div class="sm-rule-d">팝업마다 종료 절차 자동 생성(정리 단계) + 같은 입력 2회 실행 시 100% 동일 → 안정적 회귀 실행 보장</div></div>
+      </div>
+    </div>
+
+    <div class="gap-bridge animate" style="margin-top:1.1rem;">
+      바탕에는 <strong>동작 유형 코드</strong>(클릭 · 사전조건 · 입력 · 결과 표출 · 검증 · 호버)가 있어, 각 코드가 <strong>스크립트 동작으로 1:1 변환</strong>되는 어휘 역할을 합니다. 6월부터 시작하는 <strong>스크립트 생성 단계(S 시리즈 룰)</strong>는 위 포석 위에서 출발합니다.
+    </div>
+  </section>
+
+  <!-- Slide 13: Pain points & support -->
+  <section class="slide" data-slide="12">
+    <div class="slide-title animate">Pain Points & 지원 요청</div>
+
+    <div class="pain-layout animate">
+      <div>
+        <div class="pain-col-header">Pain Points</div>
+
+        <div class="pain-item">
+          <div class="pain-num">PAIN 01</div>
+          <div class="pain-question">업무 맥락 항목(사전조건·예상결과)의 자동화가 여전히 어렵습니다</div>
+          <span class="pain-arrow"></span>
+          <div class="pain-answer">
+            화면 구조는 잘 도출하지만, "이 버튼을 누르기 전 어떤 상태여야 하는가" 같은 <strong>업무 맥락</strong>은 도메인 지식이 필요합니다.<br><br>
+            대응: 시험절차·예상결과 <strong>자동 누적</strong>과 화면 진입 경로 사전조건을 이번 분기 착수. 사람 검토 의견을 규칙으로 박제하여 점진 보완 중.
+          </div>
+        </div>
+
+        <div class="pain-item">
+          <div class="pain-num">PAIN 02</div>
+          <div class="pain-question">검토 피드백이 들어와야 다음 개선이 돌 수 있습니다</div>
+          <span class="pain-arrow"></span>
+          <div class="pain-answer">
+            협업 사이클은 외부 검토 의견을 입력으로 합니다. <strong>전자고지서 첫 피드백</strong>이 아직 미수신 상태로, 같은 도구의 타 시스템 적용 검증이 대기 중입니다.<br><br>
+            대응: 노션 <a href="https://www.notion.so/364e706187e2813e9251e3fbb9537698" target="_blank" class="notion-link-inline">전자고지서 검토 요청서</a> 등록 완료 — 회신 도착 시 즉시 사이클 가동.
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="pain-col-header accent-header">지원 요청사항</div>
+
+        <div class="support-item">
+          <div class="support-issue">전자고지서 등 신규 기획서 검토 피드백</div>
+          <div class="support-arrow">→ 요청</div>
+          <div class="support-need">노션 <a href="https://www.notion.so/365e706187e281a695d6ec57cbc8db27" target="_blank" class="notion-link-inline">통합 Release 검토</a>에 대한 <strong>첫 회신</strong> 필요 (범용성 최종 검증)</div>
+        </div>
+        <div class="support-item">
+          <div class="support-issue">Figma 각 메뉴별 접근 권한</div>
+          <div class="support-arrow">→ 요청</div>
+          <div class="support-need">신규 기획서 추출을 위한 <strong>Figma 접근 권한</strong> 지속 필요</div>
+        </div>
+        <div class="support-item">
+          <div class="support-issue">그리드/테이블 검증 규칙</div>
+          <div class="support-arrow">→ 요청</div>
+          <div class="support-need">테이블 값의 원칙을 알 수 없음. <strong>API 연동규격서</strong> 등 자료 필요</div>
+        </div>
+        <div class="support-item">
+          <div class="support-issue">화면별 테스트 우선순위</div>
+          <div class="support-arrow">→ 요청</div>
+          <div class="support-need">검증 <strong>우선순위 가이드</strong> 제공 시 커버리지 집중 가능</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 14: P0 pipeline progress -->
+  <section class="slide" data-slide="13">
+    <div class="slide-title animate">P0 파이프라인 진척 <a href="https://www.notion.so/365e706187e281a695d6ec57cbc8db27" target="_blank" class="notion-link">통합 Release v60.2</a></div>
+
+    <div class="p0-progress-wrap animate">
+      <div style="font-family:'Inter',sans-serif;font-size:0.74rem;letter-spacing:0.04em;color:var(--text-secondary);margin-bottom:0.5rem;">전체 5단계 중 <strong style="color:var(--accent);">현재 ② TBT · ③ TC 가동</strong> — <span style="color:var(--positive);">1 완료</span> / <span style="color:var(--accent);">2 현재</span> / <span style="color:var(--text-tertiary);">2 예정</span></div>
+      <div class="p0-grid">
+        <div class="p0-block done"><div class="pb-num">① 단계</div><br><span class="pb-badge done">✓ 완료</span><div class="pb-name">UI 파싱 규칙</div><div class="pb-stat">R0·T ~80개 안정</div></div>
+        <div class="p0-block cur"><div class="pb-num">② 단계</div><br><span class="pb-badge cur">● 현재</span><div class="pb-name">TBT 생성</div><div class="pb-stat">Gate 60+ 통과</div></div>
+        <div class="p0-block cur"><div class="pb-num">③ 단계</div><br><span class="pb-badge cur">● 현재</span><div class="pb-name">TC 변환</div><div class="pb-stat">Gate 60+ 통과</div></div>
+        <div class="p0-block"><div class="pb-num">④ 단계</div><br><span class="pb-badge wait">○ 예정</span><div class="pb-name">Script 생성</div><div class="pb-stat">6월 착수</div></div>
+        <div class="p0-block"><div class="pb-num">⑤ 단계</div><br><span class="pb-badge wait">○ 예정</span><div class="pb-name">QA 검증</div><div class="pb-stat">7~8월</div></div>
+      </div>
+
+      <div class="p0-cycle-box">
+        <div class="p0-cycle-title">각 단계 반복 사이클</div>
+        <div class="p0-cycle-flow">
+          <span class="p0-cycle-step">생성</span><span class="p0-cycle-arrow">→</span>
+          <span class="p0-cycle-step">자동 점검</span><span class="p0-cycle-arrow">→</span>
+          <span class="p0-cycle-step">사람 검토</span><span class="p0-cycle-arrow">→</span>
+          <span class="p0-cycle-step">규칙 개선</span><span class="p0-cycle-arrow">→</span>
+          <span class="p0-cycle-step" style="opacity:0.6">반복</span>
+        </div>
+        <div class="p0-cycle-note">
+          앞 두 단계(TBT·TC)가 <strong>품질 80점대 + 자동 점검 ~92%</strong>로 안정 구간 진입. 앞 단계 품질이 뒷 단계를 결정하므로 <strong>순차 안정화</strong> 후 스크립트 단계로 진행합니다.
+        </div>
+      </div>
+
+      <div style="font-family:'Inter',sans-serif;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-tertiary);margin:0.2rem 0 0.4rem;">P0 마일스톤 — 중첩 진행 (월별) · <span style="color:var(--accent);">◎ 주력</span> / <span style="color:var(--text-secondary);">○ 병행</span></div>
+      <div class="gantt">
+        <div class="gantt-row gh">
+          <div></div>
+          <div class="gantt-cell gh-m">4월</div><div class="gantt-cell gh-m">5월</div><div class="gantt-cell gh-m">6월</div><div class="gantt-cell gh-m">7월</div><div class="gantt-cell gh-m">8월</div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-label">TBT</div>
+          <div class="gantt-cell" style="grid-column:2/4;"><div class="gantt-bar primary">◎ TBT 고도화 → Gate<div class="gantt-now" style="left:97%;"><div class="gantt-now-label">NOW</div></div></div></div>
+          <div class="gantt-cell" style="grid-column:4/5;"><div class="gantt-bar secondary">○ 잔여</div></div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-label">TC</div>
+          <div class="gantt-cell" style="grid-column:3/5;"><div class="gantt-bar primary">◎ TC 변환 + 검토 반영</div></div>
+          <div class="gantt-cell" style="grid-column:5/6;"><div class="gantt-bar secondary">○ 고도화</div></div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-label">Script</div>
+          <div class="gantt-cell" style="grid-column:4/6;"><div class="gantt-bar primary">◎ Script 생성 안정화</div></div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-label">통합</div>
+          <div class="gantt-cell" style="grid-column:6/7;"><div class="gantt-bar primary">◎ 통합 + Gate P0</div></div>
+        </div>
+        <div class="gantt-row" style="margin-top:4px;">
+          <div class="gantt-label" style="color:var(--positive);">범용성</div>
+          <div class="gantt-cell" style="grid-column:2/7;"><div class="gantt-bar verify">전자고지서 적용 ✓ → 외부 피드백 사이클 ✓ → 통합 release ✓</div></div>
+        </div>
+      </div>
+
+      <!-- Gate -->
+      <div class="gate-progress">
+        <span style="font-size:0.9rem;color:var(--text-secondary);white-space:nowrap;">P0 게이트 (정본 §2.7, 16항목)</span>
+        <div class="gate-bar-track"><div class="gate-bar-fill" style="width:56%;"></div></div>
+        <span class="gate-pct">9 / 16 충족 (+부분 2)</span>
+      </div>
+
+      <div class="gate-cols">
+        <div>
+          <h4>충족 9 + 부분 2 — 품질·구조·범용성</h4>
+          <ul>
+            <li><span class="gi ok">✔</span> 다른 기획서 1건 적용 (전자고지서)</li>
+            <li><span class="gi ok">✔</span> Layer 2 구조 완전성 6/6 (V행·PR·Flow·행수·멱등성·타기획서)</li>
+            <li><span class="gi ok">✔</span> validate V-1~8 · Pre/Post-flight 9/9</li>
+            <li><span class="gi" style="color:var(--accent);">◐</span> rule_tests ~92% · R0 본질 위반 0 (부분 2)</li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="color:var(--negative);">미충족 5 — 뒷단 실행 + 사람 검증 + 통합</h4>
+          <ul>
+            <li><span class="gi no">☐</span> ④ 스크립트 생성 / ⑤ QA E2E 무인 실행</li>
+            <li><span class="gi no">☐</span> 표준 모듈 강제 (Script 단계 후)</li>
+            <li><span class="gi no">☐</span> 샘플 50행 정확도 70%+ · E2E 1화면</li>
+            <li><span class="gi no">☐</span> 3계층 품질 대시보드 통합</li>
+          </ul>
+          <div style="font-size:0.78rem;color:var(--text-tertiary);margin-top:0.5rem;line-height:1.5;">※ 종전 19/22(86%)·15/19(79%)는 비공식 부풀림 집계. 정본 §2.7(16항목) 기준으로 통일 — 남은 5건은 P0 후반부(Script·QA·사람 검증). <a href="https://www.notion.so/36ee706187e281a7ab07e4d8a3a76177" target="_blank" class="notion-link" style="font-size:0.72rem;">단일 소스↗</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 15: Roadmap -->
+  <section class="slide" data-slide="14">
+    <div class="slide-title animate">Roadmap</div>
+
+    <ul class="roadmap-list animate">
+      <li>
+        <div class="rm-priority active">P0</div>
+        <div>
+          <div class="rm-title">설계도 → 테스트 (D2T) 자동화 환경 구성 <span class="tl-tag" style="vertical-align:middle;margin-left:0.4rem;">진행중</span></div>
+          <div class="rm-desc">파싱 규칙 → TBT → TC → 스크립트 → QA 검증 전 단계 연결. 현재 앞 두 단계 안정화 + 범용성·협업 사이클 입증 완료.</div>
+          <div class="rm-status">In Progress · 86% 게이트 충족</div>
+        </div>
+        <div class="rm-period">2026.03 ~ 08</div>
+      </li>
+      <li>
+        <div class="rm-priority">P1</div>
+        <div>
+          <div class="rm-title">L1 전수 스캔 + 카테고리 동작 검증 <span class="tl-tag" style="vertical-align:middle;margin-left:0.4rem;">구성요소 대시보드</span></div>
+          <div class="rm-desc">474개 화면 존재 검증 전수, test_defs 전체 확장, 카테고리별 동작 검증.</div>
+        </div>
+        <div class="rm-period">2026.09 ~ 2027.02</div>
+      </li>
+      <li>
+        <div class="rm-priority">P2</div>
+        <div>
+          <div class="rm-title">핵심 화면 심화 테스트 <span class="tl-tag" style="vertical-align:middle;margin-left:0.4rem;">구성요소 대시보드</span></div>
+          <div class="rm-desc">주요 화면별 결과 검증 심화. SYST0070 32 PASS 완료, 추가 화면 확대.</div>
+        </div>
+        <div class="rm-period">2027.03 ~ 08</div>
+      </li>
+      <li>
+        <div class="rm-priority">P3</div>
+        <div>
+          <div class="rm-title">그리드 하이브리드 확장 + CI/CD <span class="tl-tag" style="vertical-align:middle;margin-left:0.4rem;">통합</span></div>
+          <div class="rm-desc">그리드 하이브리드 전체 확장. CI/CD 연동으로 배포 시 자동 회귀 테스트.</div>
+        </div>
+        <div class="rm-period">2027.09 ~ 2028.02</div>
+      </li>
+    </ul>
+
+    <div class="focus-box animate">
+      <strong>현재 집중:</strong> P0 앞 단계(TBT·TC) 품질을 80점대에서 더 끌어올리고, <strong>전자고지서 첫 피드백으로 범용성을 최종 검증</strong>. 6월부터 스크립트 생성 단계(P0 Stage 4)에 착수합니다.
+    </div>
+  </section>
+
+  <!-- Slide 16: Monthly timeline -->
+  <section class="slide" data-slide="15">
+    <div class="slide-title animate">Monthly Timeline — 4/7 → 5/27</div>
+
+    <div class="timeline animate">
+      <div class="tl-row">
+        <div><div class="tl-week">WEEK 6</div><div class="tl-date">04-10 ~ 04-16</div></div>
+        <div class="tl-content">
+          <strong>구조 전환 + 하드코딩 금지 확립</strong> — 화면 연결 그래프 기반 단계 배치, "특정 값을 코드에 박지 않는다" 원칙(R0-29) 확립, 메뉴트리 → <strong>TBT 공식 명칭</strong> 전환.
+          <div class="tl-tags"><span class="tl-tag">하드코딩 금지</span><span class="tl-tag">TBT 명칭</span><span class="tl-tag">v35~v41</span></div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div><div class="tl-week">WEEK 7</div><div class="tl-date">04-17 ~ 04-23</div></div>
+        <div class="tl-content">
+          <strong>품질 점수 체계 신설 + 첫 피드백 사이클</strong> — 자동 채점기(25 메트릭, 합격선 60) 신설. 검토 의견 4건을 회귀/누적으로 분해해 전부 해결. <strong>품질 70.7 → 82.3 (+11.6)</strong>.
+          <div class="tl-tags"><span class="tl-tag">자동 채점기</span><span class="tl-tag">Gate 60</span><span class="tl-tag">+11.6점</span></div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div><div class="tl-week">WEEK 8</div><div class="tl-date">04-24 ~ 04-30</div></div>
+        <div class="tl-content">
+          <strong>4월 마무리 + 협업 하네스 재구축</strong> — 외부 피드백 사이클을 <strong>6 에이전트 팀</strong>으로 재설계(추출→원인분석→규칙보완→재생성→채점→채택). 사람 승인 게이트 2곳 설계.
+          <div class="tl-tags"><span class="tl-tag">6 에이전트</span><span class="tl-tag">승인 게이트 2곳</span><span class="tl-tag">v53</span></div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div><div class="tl-week">WEEK 9</div><div class="tl-date">05-01 ~ 05-07</div></div>
+        <div class="tl-content">
+          <strong>TC 변환 정식 가동</strong> — TBT를 사전조건·시험절차·예상결과로 변환하는 규칙(T 계열) 정식 반영. TC 전용 채점기 신설. <strong>TC 영역이 채워진 첫 산출물(v56)</strong>.
+          <div class="tl-tags"><span class="tl-tag">T 계열 규칙</span><span class="tl-tag">TC 채점기</span><span class="tl-tag">v56</span></div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div><div class="tl-week">WEEK 10</div><div class="tl-date">05-08 ~ 05-14</div></div>
+        <div class="tl-content">
+          <strong>외부 피드백 사이클 첫 완주 + 범용성 문제 발견</strong> — 피드백 11건 86% 해결(v57). TC 평가 메트릭 5종 신설(v60). <strong>다른 기획서(전자고지서) 적용 시 0 화면 인식 발견</strong> → 다음 주 최우선 과제로.
+          <div class="tl-tags"><span class="tl-tag">v57~v60</span><span class="tl-tag">TC 메트릭 5</span><span class="tl-tag">범용성 발견</span></div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div><div class="tl-week current">WEEK 11</div><div class="tl-date">05-15 ~ 05-22</div></div>
+        <div class="tl-content">
+          <strong>★ figma 범용성 첫 확보 + 6 에이전트 하네스 첫 완주</strong> — 전자고지서 인식 <strong>0 → 5화면 22행</strong>(4주 이월 부채 해소). 외부 피드백 12건 84.6% 자동 해소(v60.1). 자동 점검 통과율 <strong>85% → 100%</strong>. 사용자 도메인 지식(번호표기↔설명 매핑) 코드 박제.
+          <div class="tl-tags"><span class="tl-tag">전자고지서 0→22</span><span class="tl-tag">하네스 완주</span><span class="tl-tag">자동점검 100%</span></div>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div><div class="tl-week current">WEEK 12</div><div class="tl-date">05-22 ~ 05-27</div></div>
+        <div class="tl-content">
+          <strong>안정화 + 안전장치 입증</strong> — 멱등성(같은 입력 2회 → 100% 동일) <strong>6주 이월 부채 측정 완료</strong>. 외부 피드백 추가 사이클(자기참조 차단, 화면 진입 경로 사전조건). 무리한 변경 시 <strong>자동 롤백이 4번째 작동</strong>해 baseline 복원.
+          <div class="tl-tags"><span class="tl-tag">멱등성 완료</span><span class="tl-tag">자동 롤백</span><span class="tl-tag">v60.3~v60.9</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+var currentSlide = 0;
+var totalSlides = 15;
+var slides = document.querySelectorAll('.slide');
+var slideCounter = document.getElementById('slideCounter');
+var navDotsContainer = document.getElementById('navDots');
+var chartInstances = {};
+
+// chart slide index (DOM order) — only the quality convergence chart remains
+var IDX_TREND = 5;    // quality convergence (shifted after Architecture slide removed)
+
+(function buildDots() {
+  for (var i = 0; i < totalSlides; i++) {
+    var dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+    dot.dataset.index = i;
+    dot.addEventListener('click', function() { goToSlide(parseInt(this.dataset.index)); });
+    navDotsContainer.appendChild(dot);
+  }
+})();
+
+function goToSlide(n) {
+  if (n < 0 || n >= totalSlides || n === currentSlide) return;
+  slides[currentSlide].classList.remove('active');
+  currentSlide = n;
+  slides[currentSlide].classList.add('active');
+  slideCounter.textContent = (currentSlide + 1) + ' / ' + totalSlides;
+
+  var dots = navDotsContainer.querySelectorAll('.nav-dot');
+  for (var i = 0; i < dots.length; i++) dots[i].classList.toggle('active', i === currentSlide);
+
+  if (currentSlide === IDX_TREND) initChartTrend();
+}
+
+function nextSlide() { goToSlide(currentSlide + 1); }
+function prevSlide() { goToSlide(currentSlide - 1); }
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextSlide(); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
+});
+
+var touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY;
+}, { passive: true });
+document.addEventListener('touchend', function(e) {
+  var dx = e.changedTouches[0].screenX - touchStartX;
+  var dy = e.changedTouches[0].screenY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) { if (dx < 0) nextSlide(); else prevSlide(); }
+}, { passive: true });
+
+function toggleTheme() {
+  var html = document.documentElement;
+  var btn = document.getElementById('themeBtn');
+  if (html.classList.contains('theme-dark')) { html.classList.replace('theme-dark', 'theme-light'); btn.textContent = 'Dark'; }
+  else { html.classList.replace('theme-light', 'theme-dark'); btn.textContent = 'Light'; }
+  if (chartInstances.trend) { chartInstances.trend.destroy(); chartInstances.trend = null; }
+  if (currentSlide === IDX_TREND) initChartTrend();
+}
+
+function downloadPNG() {
+  var node = slides[currentSlide];
+  htmlToImage.toPng(node, { backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() })
+    .then(function(dataUrl) {
+      var link = document.createElement('a');
+      link.download = 'xperp-monthly-slide-' + (currentSlide + 1) + '.png';
+      link.href = dataUrl; link.click();
+    });
+}
+
+function themeColors() {
+  var isDark = document.documentElement.classList.contains('theme-dark');
+  return {
+    text: '#9B9B9B',
+    grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+    accent: isDark ? '#D4A574' : '#8B6F47',
+    neutral: isDark ? '#52525B' : '#A1A1AA',
+    positive: isDark ? '#7BC47F' : '#3D7A4A'
+  };
+}
+
+// Chart: Quality convergence trend
+function initChartTrend() {
+  if (chartInstances.trend) return;
+  var ctx = document.getElementById('scoreChart');
+  if (!ctx) return;
+  var c = themeColors();
+  var versions = ['v41','v42','v44','v47','v48','v53','v56','v57','v58','v59','v60','v60.1','v60.2'];
+  var scores   = [70.7, 76.2, 77.9, 82.0, 82.3, 83.9, 84.1, 84.1, 84.1, 84.0, 84.5, 83.9, 83.9];
+  var tcAvg    = [null, null, null, null, null, null, 78.3, 78.3, 78.3, 78.0, 82.3, 82.3, 82.3];
+
+  chartInstances.trend = new Chart(ctx, {
+    data: {
+      labels: versions,
+      datasets: [
+        { type: 'bar', label: 'TBT 생성 품질', data: scores, backgroundColor: c.accent, borderRadius: 3, borderSkipped: false, maxBarThickness: 34, order: 2 },
+        { type: 'line', label: 'TC 품질 (관/발 평균)', data: tcAvg, borderColor: c.positive, backgroundColor: 'rgba(61,122,74,0.1)', borderWidth: 2.5, tension: 0.25, pointRadius: 4, pointBackgroundColor: c.positive, spanGaps: false, order: 1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: c.text, font: { size: 11, family: 'Inter' }, boxWidth: 12, padding: 14 } },
+        annotation: {
+          annotations: {
+            gate: { type: 'line', yMin: 60, yMax: 60, borderColor: 'rgba(184,68,68,0.4)', borderWidth: 1.5, borderDash: [6,4],
+              label: { content: '합격선 (60)', display: true, position: 'end', color: '#B84444', font: { size: 10, family: 'Inter' }, backgroundColor: 'transparent' } }
+          }
+        },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': ' + ctx.parsed.y; } } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: c.text, font: { family: 'Inter', size: 11 } } },
+        y: { min: 55, max: 95, grid: { color: c.grid }, ticks: { color: c.text, font: { family: 'Inter', size: 11 } } }
+      }
+    }
+  });
+}
+
+window.addEventListener('beforeprint', function() {
+  slides.forEach(function(s) { s.classList.add('active'); });
+  initChartTrend();
+});
+window.addEventListener('afterprint', function() {
+  slides.forEach(function(s, i) { s.classList.toggle('active', i === currentSlide); });
+});
+</script>
+</body>
+</html>
