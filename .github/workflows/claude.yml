@@ -4,8 +4,9 @@ name: Claude Report Handler
 # 사용 예시 (GitHub 모바일 앱에서 이슈/PR 코멘트):
 #   @claude 2페이지 자동 점검 수치를 ~93%로 바꿔줘
 #
-# ⚠️ public repo이므로 *소유자/협업자*만 트리거 가능 (API 과금 남용 차단).
-# 필요 시크릿: ANTHROPIC_API_KEY (Settings → Secrets and variables → Actions)
+# ⚠️ public repo이므로 *소유자/협업자*만 트리거 가능 (남용 차단).
+# 필요 시크릿: CLAUDE_CODE_OAUTH_TOKEN (구독 Pro/Max 기반, `claude setup-token`으로 발급)
+#   Settings → Secrets and variables → Actions → New repository secret
 
 on:
   issue_comment:
@@ -45,5 +46,5 @@ jobs:
       - name: Run Claude Code Action
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
